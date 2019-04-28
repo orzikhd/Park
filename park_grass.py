@@ -4,29 +4,26 @@ import typing
 import pygame
 
 import park_creature
-import park_util
-from park_util import global_tree
-from park_util import load_image
+from park_state import State
 
 
 class Grass(park_creature.Creature):
-    default_image = 'pictures\\grass.png'
+    image = 'pictures\\grass.png'
 
     def __init__(self,
                  screen: pygame.Surface,
+                 state: State,
                  starting_position: typing.Tuple[int, int],
                  fertility: float):
-        park_creature.Creature.__init__(self, screen, starting_position, fertility)
-        self.screen: pygame.Surface = screen
-        self.image, self.rect = load_image('pictures\\grass.png')
-        self.fertility = fertility
-        self.rect: pygame.Rect = self.rect.move(starting_position)
-        self.spread_options = [self.rect.topright,  # right
-                               self.rect.bottomleft,  # down
-                               (self.rect.left - self.rect.width, self.rect.top),  # left
-                               (self.rect.left, self.rect.top - self.rect.height)  # up
-                               ]
-        # print(self.spread_options)
+        park_creature.Creature.__init__(self, screen, state, starting_position, fertility)
+        self.spread_options = self._generate_spread_options()
+
+    def _generate_spread_options(self):
+        return [self.rect.topright,  # right
+                self.rect.bottomleft,  # down
+                (self.rect.left - self.rect.width, self.rect.top),  # left
+                (self.rect.left, self.rect.top - self.rect.height)  # up
+                ]
 
     def update(self):
         if not self.spread_options:
@@ -46,17 +43,7 @@ class Grass(park_creature.Creature):
                 # print("hit border")
                 return
 
-            new_grass = Grass(self.screen, chosen_spot, 0.5)
+            new_grass = Grass(self.screen, self.state, chosen_spot, 0.5)
             if not new_grass._check_spawning_collision():
                 new_grass.add(self.groups())
-
-                park_util.global_sprite_counter += 1
-                global_tree.insert(park_util.global_sprite_counter,
-                                   (new_grass.rect.left,
-                                    new_grass.rect.top,
-                                    new_grass.rect.right,
-                                    new_grass.rect.bottom)
-                                   )
-                park_util.global_sprites[park_util.global_sprite_counter] = new_grass
-
-
+                self.state.add_sprite_to_park(new_grass)

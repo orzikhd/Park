@@ -3,24 +3,35 @@ import typing
 
 import pygame
 
-import park_util
 from park_util import load_image
+from park_state import State
 
 
 class Creature(pygame.sprite.Sprite):
-    default_image = 'pictures\\default.png'
+    image = 'pictures\\default.png'
 
     def __init__(self,
                  screen: pygame.Surface,
+                 state: State,
                  starting_position: typing.Tuple[int, int],
                  fertility: float = 0):
         pygame.sprite.Sprite.__init__(self)
         self.screen: pygame.Surface = screen
+        self.state: State = state
         self.fertility = fertility
         self._load_image_and_rect(starting_position)
 
+    def get_bounding_box(self):
+        return (self.rect.left,
+                self.rect.top,
+                self.rect.right,
+                self.rect.bottom)
+
+    def update(self):
+        pass
+
     def _load_image_and_rect(self, starting_position: typing.Tuple[int, int]):
-        self.image, self.rect = load_image(self.default_image)
+        self.image, self.rect = load_image(self.image)
         self.rect: pygame.Rect = self.rect.move(starting_position)
 
     def _spread(self):
@@ -30,16 +41,15 @@ class Creature(pygame.sprite.Sprite):
         return []
 
     def _check_spawning_collision(self):
-        collisions = list(park_util.global_tree.intersection(
+        collisions = list(self.state.global_tree.intersection(
                     (self.rect.left,
                      self.rect.top,
                      self.rect.right,
                      self.rect.bottom)))
-        # print("len collisions: ", len(collisions))
 
         for collision in collisions:
             # print("collision: ", collision)
-            if park_util.global_sprites[collision].rect.colliderect(self.rect):
+            if self.state.global_sprites[collision].rect.colliderect(self.rect):
                 # print("collided!")
                 return True
 

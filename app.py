@@ -2,8 +2,9 @@ import sys
 
 import pygame
 
+from park_creature import Creature
 from park_grass import Grass
-from park_util import global_tree, global_sprite_counter, global_sprites
+from park_state import State
 
 # larger context
 pygame.init()
@@ -11,34 +12,16 @@ size = width, height = 1000, 1000
 black = 0, 0, 0
 screen = pygame.display.set_mode(size)
 clock = pygame.time.Clock()
-
+state = State()
 active_sprites = pygame.sprite.RenderUpdates()
-first_grass = Grass(screen, (5, 5), 0.3)
+first_grass = Grass(screen, state, (0, 0), 0.3)
 first_grass.add(active_sprites)
-global_sprite_counter += 1
-global_sprites[global_sprite_counter] = first_grass
-global_tree.insert(global_sprite_counter,
-                   (first_grass.rect.left,
-                    first_grass.rect.top,
-                    first_grass.rect.right,
-                    first_grass.rect.bottom))
-print((first_grass.rect.left,
-                    first_grass.rect.top,
-                    first_grass.rect.right,
-                    first_grass.rect.bottom))
-print(first_grass.groups())
-print(global_sprite_counter)
-
-print(list(global_tree.intersection(
-                    (521,
-                     521,
-                     540,
-                     540))))
+state.add_sprite_to_park(first_grass)
 
 going = True
 while going:
     clock.tick(10)
-    print("all", len(global_sprites))
+    print("all", len(state.global_sprites))
     print("active", len(active_sprites))
     for event in pygame.event.get():
         if event.type == pygame.QUIT:

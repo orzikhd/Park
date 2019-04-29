@@ -2,34 +2,43 @@ import sys
 
 import pygame
 
-from park_creature import Creature
-from park_grass import Grass
-from park_state import State
+from park.creatures.park_grass import Grass
+from park.constructs.multisprite import Multisprite
+from park.park_state import State
 
-# larger context
-pygame.init()
-size = width, height = 1000, 1000
-black = 0, 0, 0
-screen = pygame.display.set_mode(size)
-clock = pygame.time.Clock()
-state = State()
-active_sprites = pygame.sprite.RenderUpdates()
-first_grass = Grass(screen, state, (0, 0), 0.3)
-first_grass.add(active_sprites)
-state.add_sprite_to_park(first_grass)
 
-going = True
-while going:
-    clock.tick(10)
-    print("all", len(state.global_sprites))
-    print("active", len(active_sprites))
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            sys.exit()
+def run_park():
+    # larger context
+    pygame.init()
+    size = width, height = 1000, 1000
+    black = 0, 0, 0
+    screen = pygame.display.set_mode(size)
+    clock = pygame.time.Clock()
+    state = State()
+    active_sprites = pygame.sprite.RenderUpdates()
+    first_grass = Grass(screen, state, (width/2, height/2), 0.1)
+    state.add_sprite_to_park(first_grass)
+    first_grass.add(active_sprites)
 
-    active_sprites.update()
-    dirty_recs = active_sprites.draw(screen)
-    pygame.display.update(dirty_recs)
+    boulder = Multisprite(screen, state, (60, 60))
+    active_sprites.add(boulder.group.sprites())
+
+    going = True
+    while going:
+        clock.tick(10)
+        # print("all", len(state.global_sprites))
+        # print("active", len(active_sprites))
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+
+        active_sprites.update()
+        dirty_recs = active_sprites.draw(screen)
+        pygame.display.update(dirty_recs)
+
+
+if __name__ == "__main__":
+    run_park()
 
 '''
 size = width, height = 1080, 920

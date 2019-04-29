@@ -3,12 +3,12 @@ import typing
 
 import pygame
 
-import park_creature
-from park_state import State
+from park.creatures import park_creature
+from park.park_state import State
 
 
 class Grass(park_creature.Creature):
-    image = 'pictures\\grass.png'
+    image = 'park\\pictures\\grass.png'
 
     def __init__(self,
                  screen: pygame.Surface,
@@ -43,7 +43,7 @@ class Grass(park_creature.Creature):
                 # print("hit border")
                 return
 
-            new_grass = Grass(self.screen, self.state, chosen_spot, 0.5)
+            new_grass = Grass(self.screen, self.state, chosen_spot, 0.05)
             if not new_grass._check_spawning_collision():
                 new_grass.add(self.groups())
                 self.state.add_sprite_to_park(new_grass)

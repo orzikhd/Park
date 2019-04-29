@@ -3,12 +3,12 @@ import typing
 
 import pygame
 
-from park_util import load_image
-from park_state import State
+from park.park_util import load_image
+from park.park_state import State
 
 
 class Creature(pygame.sprite.Sprite):
-    image = 'pictures\\default.png'
+    image = 'park\\pictures\\default.png'
 
     def __init__(self,
                  screen: pygame.Surface,

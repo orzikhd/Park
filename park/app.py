@@ -1,5 +1,5 @@
 import sys
-
+import time
 import pygame
 
 from park.creatures.park_grass import Grass
@@ -10,22 +10,25 @@ from park.park_state import State
 def run_park():
     # larger context
     pygame.init()
-    size = width, height = 1000, 1000
-    black = 0, 0, 0
-    screen = pygame.display.set_mode(size)
-    clock = pygame.time.Clock()
     state = State()
-    active_sprites = pygame.sprite.RenderUpdates()
-    first_grass = Grass(screen, state, (width/2, height/2), 0.1)
-    state.add_sprite_to_park(first_grass)
-    first_grass.add(active_sprites)
 
-    boulder = Multisprite(screen, state, (60, 60))
-    active_sprites.add(boulder.group.sprites())
+    active_sprites = pygame.sprite.RenderUpdates()
+    # first_grass = Grass(state.screen, state, (state.width/2, state.height/2), 0.1)
+    # state.add_sprite_to_park(first_grass)
+    # first_grass.add(active_sprites)
+
+    # boulder = Multisprite(state.screen, state, (60, 60))
+    # active_sprites.add(boulder.group.sprites())
+    start = time.time()
+    state.background_group.draw(state.screen)
+    pygame.display.update()
+
+    end = time.time()
+    print("time to generate background: ", (end - start) * 1000, "ms")
 
     going = True
     while going:
-        clock.tick(10)
+        state.clock.tick(60)
         # print("all", len(state.global_sprites))
         # print("active", len(active_sprites))
         for event in pygame.event.get():
@@ -33,7 +36,7 @@ def run_park():
                 sys.exit()
 
         active_sprites.update()
-        dirty_recs = active_sprites.draw(screen)
+        dirty_recs = active_sprites.draw(state.screen)
         pygame.display.update(dirty_recs)
 
 

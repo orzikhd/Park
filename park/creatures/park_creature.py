@@ -8,7 +8,8 @@ from park.park_state import State
 
 
 class Creature(pygame.sprite.Sprite):
-    image = 'park\\pictures\\default.png'
+    image = 'park\\pictures\\default-1.png'
+    scaler = 1
 
     def __init__(self,
                  screen: pygame.Surface,
@@ -31,7 +32,7 @@ class Creature(pygame.sprite.Sprite):
         pass
 
     def _load_image_and_rect(self, starting_position: typing.Tuple[int, int]):
-        self.image, self.rect = load_image(self.image)
+        self.image, self.rect = load_image(self.image, self.scaler)
         self.rect: pygame.Rect = self.rect.move(starting_position)
 
     def _spread(self):
@@ -41,7 +42,7 @@ class Creature(pygame.sprite.Sprite):
         return []
 
     def _check_spawning_collision(self):
-        collisions = list(self.state.global_tree.intersection(
+        collisions = list(self.state.global_sprite_tree.intersection(
                     (self.rect.left,
                      self.rect.top,
                      self.rect.right,

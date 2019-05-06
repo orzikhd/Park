@@ -20,7 +20,8 @@ def run_park():
     # boulder = Multisprite(state.screen, state, (60, 60))
     # active_sprites.add(boulder.group.sprites())
     start = time.time()
-    state.background_group.draw(state.screen)
+    # state.background_grid.draw(state.screen)
+    pygame.surfarray.blit_array(state.screen, state.background_grid)
     pygame.display.update()
 
     end = time.time()

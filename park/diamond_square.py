@@ -108,10 +108,10 @@ class DiamondSquare:
         grid[size - 1, 0] = random.choice(seed_options)
         grid[size - 1, size - 1] = random.choice(seed_options)
 
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            self.diamond_square(None, grid, 0, 0, size - 1, size - 1, mid_value)
+        # with concurrent.futures.ThreadPoolExecutor() as executor:
+        self.diamond_square(None, grid, 0, 0, size - 1, size - 1, mid_value)
 
-        print(grid)
+        print("generated diamond-square map of shape", grid.shape)
         print("max: ", np.amax(grid))
         print("min: ", np.amin(grid))
         # return np.amin(grid), np.amax(grid)

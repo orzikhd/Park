@@ -12,7 +12,7 @@ class Multisprite:
                  state: State,
                  starting_position: typing.Tuple[int, int]):
         # create a 2x2 multisprite
-        self.group = pygame.sprite.Group()
+        self.group = pygame.sprite.RenderUpdates()
 
         for x in range(2):
             for y in range(2):

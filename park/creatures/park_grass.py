@@ -9,6 +9,7 @@ from park.park_state import State
 
 class Grass(park_creature.Creature):
     image = 'park\\pictures\\grass-{}.png'
+    scaler = 1
 
     def __init__(self,
                  screen: pygame.Surface,
@@ -38,10 +39,7 @@ class Grass(park_creature.Creature):
 
     def update(self):
         if not self.spread_options:
-            # print("current active group len: ", len(group.sprites()))
             self.groups()[0].remove(self)  # remove self from active group
-            # park_util.global_tree = KDTree([sprite.rect.center for sprite in group])
-            # print("removed self")
             return
 
         if self._spread():

@@ -1,17 +1,20 @@
 ferts = []
 
 
+# debug functionality
 def get_ferts():
     return ferts
 
 
+# expects a raw value between 0 and 100 and transforms it into a fertility RGB color tuple
 def get_color_from_fertility(fertility):
-    transformed_fert = fertility/100 * 10
+    transformed_fert = fertility/10
     ferts.append(transformed_fert)
     return Background.dirt_colors[int(transformed_fert)]
 
 
 class Background:
+    # in order of increasing fertility
     dirt_colors = [(164, 158, 150),
                    (162, 148, 125),
                    (160, 138, 100),

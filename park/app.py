@@ -12,20 +12,22 @@ def run_park():
     pygame.init()
     state = State()
 
-    active_sprites = pygame.sprite.RenderUpdates()
-    # first_grass = Grass(state.screen, state, (state.width/2, state.height/2), 0.1)
-    # state.add_sprite_to_park(first_grass)
-    # first_grass.add(active_sprites)
-
-    # boulder = Multisprite(state.screen, state, (60, 60))
-    # active_sprites.add(boulder.group.sprites())
+    # create dirt
     start = time.time()
-    # state.background_grid.draw(state.screen)
     pygame.surfarray.blit_array(state.screen, state.background_grid)
     pygame.display.update()
-
     end = time.time()
     print("time to generate background: ", (end - start) * 1000, "ms")
+    # create grass
+    active_sprites = pygame.sprite.RenderUpdates()
+    # first_grass = Grass(state.screen, state, (state.width/2, state.height/2), 0.1)
+    first_grass = Grass(state.screen, state, (0, 0), 0.1)
+    state.add_sprite_to_park(first_grass)
+    first_grass.add(active_sprites)
+
+    # create boulders
+    boulder1 = Multisprite(state.screen, state, (60, 60))
+    boulder2 = Multisprite(state.screen, state, (200, 200))
 
     going = True
     while going:
@@ -37,8 +39,18 @@ def run_park():
                 sys.exit()
 
         active_sprites.update()
+        boulder1.group.update()
+        boulder2.group.update()
+
         dirty_recs = active_sprites.draw(state.screen)
+        dirty_recs += boulder1.group.draw(state.screen)
+        dirty_recs += boulder2.group.draw(state.screen)
         pygame.display.update(dirty_recs)
+
+        if not len(active_sprites):
+            going = False
+            print("out of active elements")
+        # print(len(active_sprites))
 
 
 if __name__ == "__main__":

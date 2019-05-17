@@ -10,7 +10,7 @@ def get_ferts():
 def get_color_from_fertility(fertility):
     transformed_fert = fertility/10
     ferts.append(transformed_fert)
-    return Background.dirt_colors[int(transformed_fert)]
+    return Background.dirt_colors[min(int(transformed_fert), 9)]
 
 
 class Background:
@@ -25,4 +25,3 @@ class Background:
                    (72, 54, 22),
                    (60, 42, 12),
                    (38, 26, 6)]
-

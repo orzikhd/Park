@@ -24,3 +24,10 @@ def load_image(name, scaler=1, colorkey=None):
     image = pygame.transform.scale(image, (int(image.get_size()[0] * scaler),
                                            int(image.get_size()[1] * scaler)))
     return image, image.get_rect()
+
+
+def get_bounding_box(rect):
+    return (rect.left,
+            rect.top,
+            rect.right,
+            rect.bottom)

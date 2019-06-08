@@ -9,10 +9,11 @@ import park.diamond_square
 
 
 class State:
-    grid_depth = 6
-    pixel_size = 10
-    width = pixel_size * (2 ** grid_depth + 1)
-    height = pixel_size * (2 ** grid_depth + 1)
+    grid_depth = 7
+    pixel_size = 5
+    grid_size = 2 ** grid_depth + 1
+    width = pixel_size * grid_size
+    height = pixel_size * grid_size
 
     def __init__(self):
         self.screen: pygame.Surface = pygame.display.set_mode((self.width, self.height))
@@ -49,7 +50,8 @@ class State:
         import park.constructs.park_background as pb
 
         start = time.time()
-        noise_grid = park.diamond_square.DiamondSquare().create_diamond_square_map(2 ** self.grid_depth + 1)
+
+        noise_grid = park.diamond_square.DiamondSquare(self.grid_size).create_diamond_square_map()
         end = time.time()
         print("time to generate noise grid: ", (end - start) * 1000, "ms")
 
@@ -68,7 +70,7 @@ class State:
         scaled_colors = np.kron(colors, np.ones((self.pixel_size, self.pixel_size, 1), dtype=float))
         assert scaled_colors.shape[0] == self.width and scaled_colors.shape[1] == self.height
 
-        ferts = park.constructs.park_background.get_ferts()
+        # ferts = park.constructs.park_background.get_ferts()
         # print("ferts: ", len(ferts))
         # print("max", max(ferts))
         # print("min", min(ferts))

@@ -2,25 +2,40 @@ import numpy as np
 import random
 from statistics import mean
 import math
-import threading
-import concurrent.futures
+from multiprocessing import Pool, sharedctypes
+import warnings
 
 
 def create_value(source_values, rand_mag):
     return mean(source_values) - (random.random() - 0.5) * rand_mag
 
 
+def mp_init(shared_array):
+    global grid_array
+    grid_array = shared_array
+
+
+def convert_to_np(arr, size):
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore', RuntimeWarning)
+        np_arr = np.reshape(np.ctypeslib.as_array(arr), (size, size))
+    return np_arr
+
+
 class DiamondSquare:
-    def __init__(self):
+    def __init__(self, size):
         print("hello world")
+        self.size = size
 
-    def __getstate__(self):
-        self_dict = self.__dict__.copy()
-        del self_dict['pool']
-        return self_dict
+    def diamond_square(self, left, top, right, bottom, rand_mag, pre_share=None):
+        # expects the global grid to be initialized
+        if pre_share:
+            # print("p")
+            grid = convert_to_np(pre_share, self.size)
+        else:
+            # print("e")
+            grid = convert_to_np(grid_array, self.size)
 
-    def diamond_square(self, executor, grid, left, top, right, bottom, rand_mag):
-        # print("called")
         x_center = math.floor((left + right) / 2)
         y_center = math.floor((top + bottom) / 2)
 
@@ -56,6 +71,14 @@ class DiamondSquare:
         if grid[east] == 0:
             grid[east] = create_value([grid[northeast], grid[southeast], grid[center]], rand_mag)
 
+    def ds_recurse(self, args):
+        left, top, right, bottom, rand_mag = args
+        # print("called")
+        x_center = math.floor((left + right) / 2)
+        y_center = math.floor((top + bottom) / 2)
+
+        self.diamond_square(left, top, right, bottom, rand_mag)
+
         # Once the centre point and the four side points are populated then,
         # provided there are no smaller regions left, split the current region
         # into four smaller regions and perform the diamond square algorithm
@@ -63,58 +86,47 @@ class DiamondSquare:
         if (right - left) > 2:
             rand_mag = math.floor(rand_mag * 2 ** -0.75)
 
-            '''
-            if executor:
-                print("parallelizing")
-                res1 = executor.submit(self.diamond_square, None, grid, left, top, x_center, y_center, rand_mag)
-                res2 = executor.submit(self.diamond_square, None, grid, left, y_center, x_center, bottom, rand_mag)
-                res3 = executor.submit(self.diamond_square, None, grid, x_center, top, right, y_center, rand_mag)
-                res4 = executor.submit(self.diamond_square, None, grid, x_center, y_center, right, bottom, rand_mag)
-                res1.result()
-                res2.result()
-                res3.result()
-                res4.result()
-            else:
-            '''
-            self.diamond_square(None, grid, left, top, x_center, y_center, rand_mag)
-            self.diamond_square(None, grid, left, y_center, x_center, bottom, rand_mag)
-            self.diamond_square(None, grid, x_center, top, right, y_center, rand_mag)
-            self.diamond_square(None, grid, x_center, y_center, right, bottom, rand_mag)
-            '''
-            '''
-            '''
-            res1 = self.pool.apply_async(self.diamond_square, [grid, left, top, x_center, y_center, rand_mag])
-            res2 = self.pool.apply_async(self.diamond_square, [grid, left, y_center, x_center, bottom, rand_mag])
-            res3 = self.pool.apply_async(self.diamond_square, [grid, x_center, top, right, y_center, rand_mag])
-            res4 = self.pool.apply_async(self.diamond_square, [grid, x_center, y_center, right, bottom, rand_mag])
-            res1.get()
-            res2.get()
-            res3.get()
-            res4.get()
-            '''
-            # print(grid)
+            self.ds_recurse((left, top, x_center, y_center, rand_mag))
+            self.ds_recurse((left, y_center, x_center, bottom, rand_mag))
+            self.ds_recurse((x_center, top, right, y_center, rand_mag))
+            self.ds_recurse((x_center, y_center, right, bottom, rand_mag))
 
-    def create_diamond_square_map(self, size, low_val=0, high_val=100):
+    def create_diamond_square_map(self, low_val=0, high_val=100):
         mid_value = math.floor((low_val + high_val) / 2)
         quarter_value = mid_value / 2
         three_quart_value = mid_value + mid_value / 2
         seed_options = [mid_value, mid_value, quarter_value, three_quart_value, three_quart_value]
         # seed_options = [mid_value]
         # initialize grid with corners
-        grid = np.zeros((size, size), dtype=float)
+        left = top = 0
+        right = bottom = self.size - 1
+        x_center = math.floor((left + right) / 2)
+        y_center = math.floor((top + bottom) / 2)
 
-        grid[0, 0] = random.choice(seed_options)
-        grid[0, size - 1] = random.choice(seed_options)
-        grid[size - 1, 0] = random.choice(seed_options)
-        grid[size - 1, size - 1] = random.choice(seed_options)
+        init_grid = np.zeros((self.size, self.size))
+        init_grid[top, left] = random.choice(seed_options)
+        init_grid[top, right] = random.choice(seed_options)
+        init_grid[bottom, left] = random.choice(seed_options)
+        init_grid[bottom, right] = random.choice(seed_options)
 
-        # with concurrent.futures.ThreadPoolExecutor() as executor:
-        self.diamond_square(None, grid, 0, 0, size - 1, size - 1, mid_value)
+        tmp = np.ctypeslib.as_ctypes(init_grid.ravel())
+        shared_array = sharedctypes.Array(tmp._type_, tmp, lock=False)
 
-        # print("generated diamond-square map of shape", grid.shape)
-        # print("max: ", np.amax(grid))
-        # print("min: ", np.amin(grid))
-        # return np.amin(grid), np.amax(grid)
+        with Pool(processes=4, initializer=mp_init, initargs=(shared_array,)) as pool:
+            # do first step
+            self.diamond_square(left, top, right, bottom, mid_value, shared_array)
+
+            res = pool.map(self.ds_recurse, [
+                (left, top, x_center, y_center, mid_value),
+                (left, y_center, x_center, bottom, mid_value),
+                (x_center, top, right, y_center, mid_value),
+                (x_center, y_center, right, bottom, mid_value)
+            ])
+            print("map res: ", res)
+        # pool.join()
+
+        grid = convert_to_np(shared_array, self.size)
+        print(grid)
         return grid
 
 

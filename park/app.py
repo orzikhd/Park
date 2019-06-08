@@ -22,7 +22,7 @@ def run_park():
     creatures = pygame.sprite.RenderUpdates()
 
     # create grass
-    first_grass = Grass(state.screen, state, (240, 240), .5, 10)
+    first_grass = Grass(state.screen, state, (240, 240), .25, 1)
     first_grass.add(active_grasses)
     first_grass.add(grasses)
     #
@@ -31,13 +31,13 @@ def run_park():
     # boulder2 = Multisprite(state.screen, state, (300, 360))
 
     # add a bug
-    bug_one = Bug(state.screen, state, (0, 0), .5, 1, 10)
+    bug_one = Bug(state.screen, state, (0, 0), .25, 1, 10)
     bug_one.add(creatures)
     print(state.width)
     print(state.height)
     going = True
     while going:
-        state.clock.tick(40)
+        state.clock.tick(60)
         # print("all", len(state.global_sprites))
         # print("active", len(active_sprites))
         for event in pygame.event.get():

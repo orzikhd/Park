@@ -3,6 +3,7 @@ import typing
 
 import pygame
 
+import park
 import park.park_util as pu
 from park.park_state import State
 
@@ -54,13 +55,13 @@ class Creature(pygame.sprite.Sprite):
         self.image, self.rect = pu.load_image(self.image, self.scaler)
         self.rect: pygame.Rect = self.rect.move(starting_position)
 
-    def _check_spawning_collision(self, proposed_rect):
-        return self._check_collision(proposed_rect, False)
+    def _check_spawning_collision(self, proposed_rect, ignore_grass=False):
+        return self._check_collision(proposed_rect, False, ignore_grass)
 
-    def _check_moving_collision(self, proposed_rect):
-        return self._check_collision(proposed_rect, True)
+    def _check_moving_collision(self, proposed_rect, ignore_grass=False):
+        return self._check_collision(proposed_rect, True, ignore_grass)
 
-    def _check_collision(self, proposed_rect, ignore_self):
+    def _check_collision(self, proposed_rect, ignore_self, ignore_grass):
         collisions = list(self.state.global_sprite_tree.intersection(pu.get_bounding_box(proposed_rect)))
         if ignore_self and self.sprite_id in collisions:
             collisions.remove(self.sprite_id)
@@ -71,7 +72,11 @@ class Creature(pygame.sprite.Sprite):
 
         for collision in collisions:
             # print("collision: ", collision)
-            if self.state.global_sprites[collision].rect.colliderect(proposed_rect):
+            collided_sprite = self.state.global_sprites[collision]
+            if (ignore_grass
+                    and type(collided_sprite) == park.creatures.park_grass.Grass):
+                continue
+            if collided_sprite.rect.colliderect(proposed_rect):
                 # print("collided!")
                 return True
 

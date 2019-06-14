@@ -73,7 +73,7 @@ class DiamondSquare:
 
     def ds_recurse(self, args):
         left, top, right, bottom, rand_mag = args
-        # print("called")
+
         x_center = math.floor((left + right) / 2)
         y_center = math.floor((top + bottom) / 2)
 
@@ -97,6 +97,7 @@ class DiamondSquare:
         three_quart_value = mid_value + mid_value / 2
         seed_options = [mid_value, mid_value, quarter_value, three_quart_value, three_quart_value]
         # seed_options = [mid_value]
+
         # initialize grid with corners
         left = top = 0
         right = bottom = self.size - 1
@@ -116,29 +117,12 @@ class DiamondSquare:
             # do first step
             self.diamond_square(left, top, right, bottom, mid_value, shared_array)
 
-            res = pool.map(self.ds_recurse, [
+            pool.map(self.ds_recurse, [
                 (left, top, x_center, y_center, mid_value),
                 (left, y_center, x_center, bottom, mid_value),
                 (x_center, top, right, y_center, mid_value),
                 (x_center, y_center, right, bottom, mid_value)
             ])
-            print("map res: ", res)
-        # pool.join()
 
         grid = convert_to_np(shared_array, self.size)
-        print(grid)
         return grid
-
-
-'''
-if __name__ == "__main__":
-    all_mins = []
-    all_maxs = []
-    for i in range(40):
-        minv, maxv = create_diamond_square_map(2 ** 5 + 1)
-        all_mins.append(minv)
-        all_maxs.append(maxv)
-
-    print("f max: ", max(all_maxs))
-    print("f min: ", min(all_mins))
-'''

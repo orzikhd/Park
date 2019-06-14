@@ -39,7 +39,7 @@ class Bug(park_creature.Creature):
             # print("new move", new_move)
 
             if (x_speed == 0 and y_speed == 0) or \
-                    not self._check_moving_collision(new_move):
+                    not self._check_moving_collision(new_move, True):
                 has_new_valid_spot = True
                 self.rect = new_move
             else:

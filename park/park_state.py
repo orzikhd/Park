@@ -9,8 +9,8 @@ import park.diamond_square
 
 
 class State:
-    grid_depth = 7
-    pixel_size = 5
+    grid_depth = 6
+    pixel_size = 20
     grid_size = 2 ** grid_depth + 1
     width = pixel_size * grid_size
     height = pixel_size * grid_size

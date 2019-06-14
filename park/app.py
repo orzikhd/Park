@@ -18,26 +18,30 @@ def run_park():
     print("time to generate state", (time.time() - start) * 1000, "ms")
 
     active_grasses = pygame.sprite.RenderUpdates()
-    grasses = pygame.sprite.Group()
+    grasses = pygame.sprite.RenderUpdates()
     creatures = pygame.sprite.RenderUpdates()
 
     # create grass
-    first_grass = Grass(state.screen, state, (240, 240), .25, 1)
+    first_grass = Grass(state.screen, state, (240, 240), .5, 1)
     first_grass.add(active_grasses)
     first_grass.add(grasses)
-    #
-    # # create boulders
-    # boulder1 = Multisprite(state.screen, state, (60, 60))
-    # boulder2 = Multisprite(state.screen, state, (300, 360))
+
+    # create boulders
+    boulders = [
+        Multisprite(state.screen, state, (60, 60)),
+        Multisprite(state.screen, state, (300, 360))
+    ]
 
     # add a bug
-    bug_one = Bug(state.screen, state, (0, 0), .25, 1, 10)
+    bug_one = Bug(state.screen, state, (0, 0), 1, 1, 5)
+    bug_two = Bug(state.screen, state, (200, 200), 1, 1, 10)
+    bug_three = Bug(state.screen, state, (0, 300), 1, 1, 15)
     bug_one.add(creatures)
-    print(state.width)
-    print(state.height)
+    bug_two.add(creatures)
+    bug_three.add(creatures)
     going = True
     while going:
-        state.clock.tick(60)
+        state.clock.tick(40)
         # print("all", len(state.global_sprites))
         # print("active", len(active_sprites))
         for event in pygame.event.get():
@@ -46,18 +50,25 @@ def run_park():
 
         active_grasses.update()
         # print("global counter", state.global_sprite_counter)
-        # boulder1.group.update()
-        # boulder2.group.update()
+        for boulder in boulders:
+            boulder.group.update()
+
+        # fill in creatures with background and redraw them, for movement
         old_spots = [creature.rect for creature in creatures.sprites()]
         creatures.update()
         for rec in old_spots:
             state.screen.blit(state.background_screen, rec, rec)
-        dirty_recs = old_spots
-        dirty_recs += active_grasses.draw(state.screen)
-        # dirty_recs += boulder1.group.draw(state.screen)
-        # dirty_recs += boulder2.group.draw(state.screen)
-        dirty_recs += creatures.draw(state.screen)
 
+        dirty_recs = []
+        # TODO Get just the active grasses + grasses walked on
+        # TODO Otherwise it slows down a lot with a lot of grass
+        dirty_recs += grasses.draw(state.screen)
+
+        for boulder in boulders:
+            dirty_recs += boulder.group.draw(state.screen)
+
+        dirty_recs += old_spots
+        dirty_recs += creatures.draw(state.screen)
         pygame.display.update(dirty_recs)
 
         if not len(active_grasses):

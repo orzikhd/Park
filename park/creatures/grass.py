@@ -5,12 +5,12 @@ import statistics as st
 import pygame
 
 from park.behaviors.spreads import Spreads
-from park.creatures import park_creature
+from park.creatures import creature
 from park.park_state import State
 
 
-class Grass(park_creature.Creature):
-    image = 'park\\pictures\\grass-{}.png'
+class Grass(creature.Creature):
+    IMAGE_LOCATION = 'park\\pictures\\grass-{}.png'
 
     def __init__(self,
                  screen: pygame.Surface,
@@ -18,8 +18,8 @@ class Grass(park_creature.Creature):
                  starting_position: typing.Tuple[int, int],
                  scaler: float,
                  fertility: float):
-        self.image = self._get_image_from_fertility(fertility)
-        park_creature.Creature.__init__(self, screen, state, starting_position, scaler, fertility)
+        self.IMAGE_LOCATION = self._get_image_from_fertility(fertility)
+        creature.Creature.__init__(self, screen, state, starting_position, scaler, fertility)
         self.spreads = Spreads(screen, fertility, self.rect)
         self.spread_options = self._generate_spread_options()
 
@@ -28,15 +28,15 @@ class Grass(park_creature.Creature):
 
     def _get_image_from_fertility(self, fertility):
         if fertility < 0.02:
-            return self.image.format("1")
+            return self.IMAGE_LOCATION.format("1")
         elif fertility < 0.04:
-            return self.image.format("2")
+            return self.IMAGE_LOCATION.format("2")
         elif fertility < 0.06:
-            return self.image.format("3")
+            return self.IMAGE_LOCATION.format("3")
         elif fertility < 0.08:
-            return self.image.format("4")
+            return self.IMAGE_LOCATION.format("4")
         else:
-            return self.image.format("5")
+            return self.IMAGE_LOCATION.format("5")
 
     def update(self):
         if not self.spread_options:
@@ -47,9 +47,9 @@ class Grass(park_creature.Creature):
             chosen_spot = random.choice(self.spread_options)
             self.spread_options.remove(chosen_spot)
             if chosen_spot[0] < 0 \
-                    or chosen_spot[0] >= self.state.width \
+                    or chosen_spot[0] >= self.state.WIDTH \
                     or chosen_spot[1] < 0 \
-                    or chosen_spot[1] >= self.state.height:
+                    or chosen_spot[1] >= self.state.HEIGHT:
                 # print("hit border")
                 return
 

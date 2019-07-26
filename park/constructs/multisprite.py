@@ -3,7 +3,7 @@ import typing
 import pygame
 
 from park.park_state import State
-from park.creatures.park_creature import Creature
+from park.creatures.creature import Creature
 
 
 class Multisprite:

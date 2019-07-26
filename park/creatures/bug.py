@@ -2,13 +2,12 @@ import typing
 import random
 import pygame
 
-from park.creatures import park_creature
+from park.creatures import creature
 from park.park_state import State
-from park.park_util import get_bounding_box
 
 
-class Bug(park_creature.Creature):
-    image = 'park\\pictures\\bug.png'
+class Bug(creature.Creature):
+    IMAGE_LOCATION = 'park\\pictures\\bug.png'
 
     def __init__(self,
                  screen: pygame.Surface,
@@ -17,7 +16,7 @@ class Bug(park_creature.Creature):
                  scaler: float,
                  fertility: float,
                  speed: float):
-        park_creature.Creature.__init__(self, screen, state, starting_position, scaler, fertility)
+        creature.Creature.__init__(self, screen, state, starting_position, scaler, fertility)
         self.tick = 0
         self.speed = speed
 
@@ -30,10 +29,10 @@ class Bug(park_creature.Creature):
             x_speed = random.choice([self.speed, 0, -self.speed])
             y_speed = random.choice([self.speed, 0, -self.speed])
             new_move = self.rect.move(x_speed, y_speed)
-            if new_move.left < 0 or new_move.right > self.state.width:
+            if new_move.left < 0 or new_move.right > self.state.WIDTH:
                 new_move = self.rect.move(-x_speed, 0)
 
-            if new_move.top < 0 or new_move.bottom > self.state.height:
+            if new_move.top < 0 or new_move.bottom > self.state.HEIGHT:
                 new_move = self.rect.move(0, -2 * y_speed)
 
             # print("new move", new_move)
@@ -42,9 +41,8 @@ class Bug(park_creature.Creature):
                     not self._check_moving_collision(new_move, True):
                 has_new_valid_spot = True
                 self.rect = new_move
-            else:
-                print("collided!")
+
         # print(self.rect)
 
-        # print("updating location from ", get_bounding_box(old_move), "to", self.get_bounding_box())
-        self.state.update_sprite_in_park(self, self.sprite_id, get_bounding_box(old_move))
+        # print("updating location from ", self.get_bounding_box(old_move), "to", self.get_bounding_box())
+        self.state.update_sprite_in_park(self, self.sprite_id, self.get_bounding_box(old_move))

@@ -10,10 +10,10 @@ def get_ferts():
 def get_color_from_fertility(fertility):
     transformed_fert = fertility/10
     ferts.append(transformed_fert)
-    return Background.dirt_colors[min(int(transformed_fert), 9)]
+    return Terrain.dirt_colors[min(int(transformed_fert), 9)]
 
 
-class Background:
+class Terrain:
     # in order of increasing fertility
     dirt_colors = [(164, 158, 150),
                    (162, 148, 125),

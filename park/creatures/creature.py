@@ -23,7 +23,7 @@ class Creature(pygame.sprite.Sprite):
 
     # override this to get a different image for your creature
     # images are expected to be 20x20 pixels
-    image = 'park\\pictures\\default-1.png'
+    IMAGE_LOCATION = 'park\\pictures\\default-1.png'
 
     def __init__(self,
                  screen: pygame.Surface,
@@ -36,15 +36,18 @@ class Creature(pygame.sprite.Sprite):
         self.state: State = state
         self.scaler = scaler
         self.fertility = fertility
-        self._load_image_and_rect(starting_position)
+        self.image, self.rect = self._load_image_and_rect(starting_position)
         self.sprite_id = self.state.add_sprite_to_park(self)
 
-    # helper function to return the 4 corners of the creature as a tuple
-    def get_bounding_box(self):
-        return (self.rect.left,
-                self.rect.top,
-                self.rect.right,
-                self.rect.bottom)
+    # helper function to return the 4 corners of a rect as a tuple
+    # if the rect isn't provided, returns the corners of the rect of self
+    def get_bounding_box(self, rect=None):
+        # print(self, rect)
+        rect = rect if rect else self.rect  # I'm sorry
+        return (rect.left,
+                rect.top,
+                rect.right,
+                rect.bottom)
 
     # update function is inherited from Sprite and is called with every tick
     # default behavior is to do nothing, should be overwritten
@@ -52,8 +55,9 @@ class Creature(pygame.sprite.Sprite):
         pass
 
     def _load_image_and_rect(self, starting_position: typing.Tuple[int, int]):
-        self.image, self.rect = pu.load_image(self.image, self.scaler)
-        self.rect: pygame.Rect = self.rect.move(starting_position)
+        image, rect = pu.load_image(self.IMAGE_LOCATION, self.scaler)
+        rect: pygame.Rect = rect.move(starting_position)
+        return image, rect
 
     def _check_spawning_collision(self, proposed_rect, ignore_grass=False):
         return self._check_collision(proposed_rect, False, ignore_grass)
@@ -62,7 +66,7 @@ class Creature(pygame.sprite.Sprite):
         return self._check_collision(proposed_rect, True, ignore_grass)
 
     def _check_collision(self, proposed_rect, ignore_self, ignore_grass):
-        collisions = list(self.state.global_sprite_tree.intersection(pu.get_bounding_box(proposed_rect)))
+        collisions = list(self.state.global_sprite_tree.intersection(self.get_bounding_box(proposed_rect)))
         if ignore_self and self.sprite_id in collisions:
             collisions.remove(self.sprite_id)
 
@@ -74,7 +78,7 @@ class Creature(pygame.sprite.Sprite):
             # print("collision: ", collision)
             collided_sprite = self.state.global_sprites[collision]
             if (ignore_grass
-                    and type(collided_sprite) == park.creatures.park_grass.Grass):
+                    and type(collided_sprite) == park.creatures.grass.Grass):
                 continue
             if collided_sprite.rect.colliderect(proposed_rect):
                 # print("collided!")

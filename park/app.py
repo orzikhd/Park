@@ -1,10 +1,11 @@
 import sys
-import time
+
 import pygame
 
-from park.creatures.park_grass import Grass
-from park.creatures.park_bug import Bug
+import park.park_util as pu
 from park.constructs.multisprite import Multisprite
+from park.creatures.bug import Bug
+from park.creatures.grass import Grass
 from park.park_state import State
 
 
@@ -12,10 +13,8 @@ def run_park():
     # larger context
     pygame.init()
 
-    # create dirt
-    start = time.time()
-    state = State()
-    print("time to generate state", (time.time() - start) * 1000, "ms")
+    # create game state
+    state = pu.time_and_log(lambda: State(), "Time to generate state:")
 
     active_grasses = pygame.sprite.RenderUpdates()
     grasses = pygame.sprite.RenderUpdates()
@@ -41,7 +40,7 @@ def run_park():
     bug_three.add(creatures)
     going = True
     while going:
-        state.clock.tick(40)
+        state.clock.tick(60)
         # print("all", len(state.global_sprites))
         # print("active", len(active_sprites))
         for event in pygame.event.get():
@@ -57,7 +56,7 @@ def run_park():
         old_spots = [creature.rect for creature in creatures.sprites()]
         creatures.update()
         for rec in old_spots:
-            state.screen.blit(state.background_screen, rec, rec)
+            state.screen.blit(state.terrain_screen, rec, rec)
 
         dirty_recs = []
         # TODO Get just the active grasses + grasses walked on
@@ -67,7 +66,6 @@ def run_park():
         for boulder in boulders:
             dirty_recs += boulder.group.draw(state.screen)
 
-        dirty_recs += old_spots
         dirty_recs += creatures.draw(state.screen)
         pygame.display.update(dirty_recs)
 

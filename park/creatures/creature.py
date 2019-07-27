@@ -22,7 +22,6 @@ class Creature(pygame.sprite.Sprite):
     """
 
     # override this to get a different image for your creature
-    # images are expected to be 20x20 pixels
     IMAGE_LOCATION = 'park\\pictures\\default-1.png'
 
     def __init__(self,

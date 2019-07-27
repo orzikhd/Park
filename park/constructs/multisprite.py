@@ -1,4 +1,4 @@
-import typing
+from typing import List, Tuple
 
 import pygame
 
@@ -7,19 +7,27 @@ from park.creatures.creature import Creature
 
 
 class Multisprite:
+    """
+    A wrapper for a group of sprites created all at once to be one entity.
+    """
     def __init__(self,
                  screen: pygame.Surface,
                  state: State,
-                 starting_position: typing.Tuple[int, int],
+                 positions: List[Tuple[int, int]],
                  scaler: float = 1):
-        # create a 2x2 multisprite
+        """
+        Create the Multisprite.
+        :param screen: to place the multisprite onto
+        :param state: state of the park
+        :param positions: list of positions to place sprites into to create the multisprite
+        :param scaler: how much to scale the sprite's image for each sprite
+        """
         self.group = pygame.sprite.RenderUpdates()
         self.scaler = scaler
 
-        for x in range(2):
-            for y in range(2):
-                creature = Creature(screen,
-                                    state,
-                                    (starting_position[0] + 20 * x, starting_position[1] + 20 * y),
-                                    scaler)
-                self.group.add(creature)
+        for position in positions:
+            creature = Creature(screen=screen,
+                                state=state,
+                                starting_position=position,
+                                scaler=scaler)
+            self.group.add(creature)

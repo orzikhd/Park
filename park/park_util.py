@@ -8,6 +8,9 @@ from pygame.locals import *
 
 images = {}
 
+# images are expected to be 20x20 pixels
+CREATURE_IMAGE_SIZE = 20
+
 
 def load_image(name, scaler=1, colorkey=None):
     if (name, scaler) in images:

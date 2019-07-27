@@ -3,7 +3,7 @@ import sys
 import pygame
 
 import park.park_util as pu
-from park.constructs.multisprite import Multisprite
+from park.constructs.rock import create_rock
 from park.creatures.bug import Bug
 from park.creatures.grass import Grass
 from park.park_state import State
@@ -25,10 +25,12 @@ def run_park():
     first_grass.add(active_grasses)
     first_grass.add(grasses)
 
-    # create boulders
-    boulders = [
-        Multisprite(state.screen, state, (60, 60)),
-        Multisprite(state.screen, state, (300, 360))
+    # create rocks
+    rocks = [
+        create_rock(state.screen, state, starting_position=(60, 60), size=2),
+        create_rock(state.screen, state, starting_position=(0, 420), size=4),
+        create_rock(state.screen, state, starting_position=(500, 420), size=1),
+        create_rock(state.screen, state, starting_position=(360, 260), size=3)
     ]
 
     # add a bug
@@ -49,8 +51,8 @@ def run_park():
 
         active_grasses.update()
         # print("global counter", state.global_sprite_counter)
-        for boulder in boulders:
-            boulder.group.update()
+        for rock in rocks:
+            rock.group.update()
 
         # fill in creatures with background and redraw them, for movement
         old_spots = [creature.rect for creature in creatures.sprites()]
@@ -63,8 +65,8 @@ def run_park():
         # TODO Otherwise it slows down a lot with a lot of grass
         dirty_recs += grasses.draw(state.screen)
 
-        for boulder in boulders:
-            dirty_recs += boulder.group.draw(state.screen)
+        for rock in rocks:
+            dirty_recs += rock.group.draw(state.screen)
 
         dirty_recs += creatures.draw(state.screen)
         pygame.display.update(dirty_recs)

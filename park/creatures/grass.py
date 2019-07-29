@@ -1,6 +1,6 @@
 import random
-import typing
 import statistics as st
+import typing
 
 import pygame
 
@@ -20,11 +20,8 @@ class Grass(creature.Creature):
                  fertility: float):
         self.IMAGE_LOCATION = self._get_image_from_fertility(fertility)
         creature.Creature.__init__(self, screen, state, starting_position, scaler, fertility)
-        self.spreads = Spreads(screen, fertility, self.rect)
-        self.spread_options = self._generate_spread_options()
-
-    def _generate_spread_options(self):
-        return self.spreads.get_neighboring_squares()
+        self.spreads = Spreads(screen, self.rect, fertility)
+        self.spread_options = self.spreads.get_neighboring_squares()
 
     def _get_image_from_fertility(self, fertility):
         if fertility < 0.02:
@@ -53,10 +50,11 @@ class Grass(creature.Creature):
                 # print("hit border")
                 return
 
-            if self._check_spawning_collision(pygame.Rect(chosen_spot[0],
-                                                          chosen_spot[1],
-                                                          int(20 * self.scaler),
-                                                          int(20 * self.scaler))):
+            if self.state.check_spawning_collision(self,
+                                                   pygame.Rect(chosen_spot[0],
+                                                               chosen_spot[1],
+                                                               int(20 * self.scaler),
+                                                               int(20 * self.scaler))):
                 return
 
             env_fertility = self.state.fertility_grid[chosen_spot] / 1000

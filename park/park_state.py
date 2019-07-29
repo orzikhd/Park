@@ -1,9 +1,8 @@
-import time
-
 import numpy as np
 import pygame
 from rtree import index
 
+import park.creatures
 import park.diamond_square
 
 
@@ -41,13 +40,41 @@ class State:
         self.global_sprite_tree.insert(self.global_sprite_counter, sprite.get_bounding_box())
         return self.global_sprite_counter  # return as a unique index given to this sprite just in case
 
-    def remove_sprite_from_park(self, sprite, sprite_id):
+    def remove_sprite_from_park(self, creature, sprite_id):
         del self.global_sprites[sprite_id]
-        self.global_sprite_tree.delete(sprite_id, sprite.get_bounding_box())
+        self.global_sprite_tree.delete(sprite_id, creature.get_bounding_box())
 
-    def update_sprite_in_park(self, sprite, sprite_id, old_box):
+    def update_sprite_in_park(self, creature, sprite_id, old_box):
         self.global_sprite_tree.delete(sprite_id, old_box)
-        self.global_sprite_tree.insert(sprite_id, sprite.get_bounding_box())
+        self.global_sprite_tree.insert(sprite_id, creature.get_bounding_box())
+
+    def check_spawning_collision(self, creature, proposed_rect, ignore_grass=False):
+        return self.check_collision(creature, proposed_rect, ignore_self=False, ignore_grass=ignore_grass)
+
+    def check_moving_collision(self, creature, proposed_rect, ignore_grass=False):
+        return self.check_collision(creature, proposed_rect, ignore_self=True, ignore_grass=ignore_grass)
+
+    def check_collision(self, creature, proposed_rect, ignore_self, ignore_grass):
+        collisions = list(self.global_sprite_tree.intersection(creature.get_bounding_box(proposed_rect)))
+        if ignore_self and creature.sprite_id in collisions:
+            collisions.remove(creature.sprite_id)
+
+        if collisions:
+            # print(collisions)
+            pass
+
+        for collision in collisions:
+            # print("collision: ", collision)
+            collided_sprite = self.global_sprites[collision]
+            if (ignore_grass
+                    and type(collided_sprite) == park.creatures.grass.Grass):
+                continue
+            if collided_sprite.rect.colliderect(proposed_rect):
+                # print("collided!")
+                return True
+
+        # print("all good")
+        return False
 
     @staticmethod
     def _create_terrain():

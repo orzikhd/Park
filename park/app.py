@@ -34,15 +34,15 @@ def run_park():
     ]
 
     # add a bug
-    bug_one = Bug(state.screen, state, (0, 0), 1, 1, 5)
-    bug_two = Bug(state.screen, state, (200, 200), 1, 1, 10)
-    bug_three = Bug(state.screen, state, (0, 300), 1, 1, 15)
+    bug_one = Bug(state.screen, state, starting_position=(0, 0), scaler=1, fertility=1, speed=5)
+    bug_two = Bug(state.screen, state, starting_position=(200, 200), scaler=1, fertility=1, speed=10)
+    bug_three = Bug(state.screen, state, starting_position=(300, 300), scaler=1, fertility=1, speed=15)
     bug_one.add(creatures)
     bug_two.add(creatures)
     bug_three.add(creatures)
     going = True
     while going:
-        state.clock.tick(60)
+        state.clock.tick(20)
         # print("all", len(state.global_sprites))
         # print("active", len(active_sprites))
         for event in pygame.event.get():
@@ -57,8 +57,8 @@ def run_park():
         # fill in creatures with background and redraw them, for movement
         old_spots = [creature.rect for creature in creatures.sprites()]
         creatures.update()
-        for rec in old_spots:
-            state.screen.blit(state.terrain_screen, rec, rec)
+        for rect in old_spots:
+            state.screen.blit(state.terrain_screen, rect, rect)
 
         dirty_recs = []
         # TODO Get just the active grasses + grasses walked on

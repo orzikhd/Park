@@ -1,9 +1,7 @@
-import random
 import typing
 
 import pygame
 
-import park
 import park.park_util as pu
 from park.park_state import State
 
@@ -33,10 +31,12 @@ class Creature(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.screen: pygame.Surface = screen
         self.state: State = state
-        self.scaler = scaler
-        self.fertility = fertility
+        self.scaler: float = scaler
+        self.fertility: float = fertility
+        self.image: pygame.Surface
+        self.rect: pygame.Rect
         self.image, self.rect = self._load_image_and_rect(starting_position)
-        self.sprite_id = self.state.add_sprite_to_park(self)
+        self.sprite_id: int = self.state.add_sprite_to_park(self)
 
     # helper function to return the 4 corners of a rect as a tuple
     # if the rect isn't provided, returns the corners of the rect of self
@@ -57,31 +57,3 @@ class Creature(pygame.sprite.Sprite):
         image, rect = pu.load_image(self.IMAGE_LOCATION, self.scaler)
         rect: pygame.Rect = rect.move(starting_position)
         return image, rect
-
-    def _check_spawning_collision(self, proposed_rect, ignore_grass=False):
-        return self._check_collision(proposed_rect, False, ignore_grass)
-
-    def _check_moving_collision(self, proposed_rect, ignore_grass=False):
-        return self._check_collision(proposed_rect, True, ignore_grass)
-
-    def _check_collision(self, proposed_rect, ignore_self, ignore_grass):
-        collisions = list(self.state.global_sprite_tree.intersection(self.get_bounding_box(proposed_rect)))
-        if ignore_self and self.sprite_id in collisions:
-            collisions.remove(self.sprite_id)
-
-        if collisions:
-            # print(collisions)
-            pass
-
-        for collision in collisions:
-            # print("collision: ", collision)
-            collided_sprite = self.state.global_sprites[collision]
-            if (ignore_grass
-                    and type(collided_sprite) == park.creatures.grass.Grass):
-                continue
-            if collided_sprite.rect.colliderect(proposed_rect):
-                # print("collided!")
-                return True
-
-        # print("all good")
-        return False

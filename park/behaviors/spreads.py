@@ -11,10 +11,10 @@ class Spreads:
     fertility: the spreader's fertility, between 0 and 1
     rect: the spreader's rect, which doesn't move
     """
-    def __init__(self, screen, fertility, rect):
+    def __init__(self, screen, rect, fertility):
         self.screen = screen
-        self.fertility = fertility
         self.rect = rect
+        self.fertility = fertility
 
     def should_spread(self):
         return random.random() < self.fertility

@@ -11,7 +11,7 @@ class State:
     A State does all the bookkeeping for the state of the Park.
     """
 
-    GRID_DEPTH = 6  # This is the depth to run the symmetric dirt procedural generation
+    GRID_DEPTH = 7  # This is the depth to run the symmetric dirt procedural generation
     PIXEL_SIZE = 10  # Scales the park, so a higher pixel size makes it more "zoomed in"
     GRID_SIZE = 2 ** GRID_DEPTH + 1  # Non-scaled length of one side of the park grid
     WIDTH = PIXEL_SIZE * GRID_SIZE  # width of the park grid scaled by pixel size

@@ -9,8 +9,10 @@ from park.creatures import creature
 from park.park_state import State
 
 
-class Bug(creature.Creature):
-    IMAGE_LOCATION = 'park\\pictures\\bug.png'
+class SwirlyBug(creature.Creature):
+    IMAGE_LOCATION = 'park\\pictures\\swirly-bug.png'
+
+    ROTATION_CONSTANT = 28  # dividing the radians into 14 sections, I think
 
     def __init__(self,
                  screen: pygame.Surface,
@@ -23,18 +25,11 @@ class Bug(creature.Creature):
         self.movesBehavior = Moves(self)
         self.original_image = self.image
         self.speed = speed
+        self.angle = 0
 
-    def _random_walk(self):
-        x_offset = random.choice([self.speed, 0, -self.speed])
-        y_offset = random.choice([self.speed, 0, -self.speed])
-
-        offset = math.sqrt(x_offset**2 + y_offset**2)
-        if offset:
-            angle = math.atan2(-y_offset, x_offset)  # negative y_offset to account for reversed y axis
-        else:
-            angle = 0
-
-        return offset, angle
+    def _circle_walk(self):
+        self.angle += 1
+        return self.speed, (self.angle / self.ROTATION_CONSTANT) * math.pi
 
     def update(self):
-        self.movesBehavior.move(self._random_walk)
+        self.movesBehavior.move(self._circle_walk)

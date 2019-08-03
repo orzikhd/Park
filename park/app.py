@@ -5,6 +5,7 @@ import pygame
 import park.park_util as pu
 from park.constructs.rock import create_rock
 from park.creatures.bug import Bug
+from park.creatures.swirly_bug import SwirlyBug
 from park.creatures.grass import Grass
 from park.park_state import State
 
@@ -34,12 +35,16 @@ def run_park():
     ]
 
     # add a bug
-    bug_one = Bug(state.screen, state, starting_position=(0, 0), scaler=1, fertility=1, speed=5)
+    bug_one = Bug(state.screen, state, starting_position=(500, 500), scaler=3, fertility=1, speed=5)
     bug_two = Bug(state.screen, state, starting_position=(200, 200), scaler=1, fertility=1, speed=10)
     bug_three = Bug(state.screen, state, starting_position=(300, 300), scaler=1, fertility=1, speed=15)
     bug_one.add(creatures)
     bug_two.add(creatures)
     bug_three.add(creatures)
+    swirly_one = SwirlyBug(state.screen, state, starting_position=(800, 800), scaler=2, fertility=1, speed=5)
+    swirly_one.add(creatures)
+    swirly_two = SwirlyBug(state.screen, state, starting_position=(700, 150), scaler=1, fertility=1, speed=15)
+    swirly_two.add(creatures)
     going = True
     while going:
         state.clock.tick(20)

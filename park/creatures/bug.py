@@ -2,27 +2,20 @@ import math
 import random
 import typing
 
-import pygame
-
-from park.behaviors.moves import Moves
-from park.creatures import creature
+from park.creatures.creature import Creature
 from park.park_state import State
 
 
-class Bug(creature.Creature):
+class Bug(Creature):
     IMAGE_LOCATION = 'park\\pictures\\bug.png'
 
     def __init__(self,
-                 screen: pygame.Surface,
                  state: State,
                  starting_position: typing.Tuple[int, int],
                  scaler: float,
                  fertility: float,
                  speed: float):
-        creature.Creature.__init__(self, screen, state, starting_position, scaler, fertility)
-        self.movesBehavior = Moves(self)
-        self.original_image = self.image
-        self.speed = speed
+        Creature.__init__(self, state, starting_position, scaler, fertility, speed)
 
     def _random_walk(self):
         x_offset = random.choice([self.speed, 0, -self.speed])

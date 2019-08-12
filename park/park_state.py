@@ -1,9 +1,10 @@
+from typing import Dict
+
 import numpy as np
 import pygame
-from rtree import index
 
-import park.creatures
 import park.diamond_square
+from park.sprite_tree import SpriteTree
 
 
 class State:
@@ -11,70 +12,66 @@ class State:
     A State does all the bookkeeping for the state of the Park.
     """
 
-    GRID_DEPTH = 7  # This is the depth to run the symmetric dirt procedural generation
-    PIXEL_SIZE = 10  # Scales the park, so a higher pixel size makes it more "zoomed in"
+    GRID_DEPTH = 8  # This is the depth to run the symmetric dirt procedural generation
+    PIXEL_SIZE = 5  # Scales the park, so a higher pixel size makes it more "zoomed in"
     GRID_SIZE = 2 ** GRID_DEPTH + 1  # Non-scaled length of one side of the park grid
     WIDTH = PIXEL_SIZE * GRID_SIZE  # width of the park grid scaled by pixel size
     HEIGHT = PIXEL_SIZE * GRID_SIZE  # height of the park grid scaled by pixel size
 
     def __init__(self):
+        from park.creatures.park_entity import ParkEntity
         self.screen: pygame.Surface = pygame.display.set_mode((State.WIDTH, State.HEIGHT))
         self.terrain_screen: pygame.Surface = pygame.Surface(self.screen.get_size())
         self.clock = pygame.time.Clock()
-        self.global_sprites = {}
-        self.global_sprite_tree = index.Index()
+        self.global_sprites: Dict[int, ParkEntity] = {}
         self.global_sprite_counter = -1
 
-        # self.background_group = self._create_background()
-        # self.background_list = self.background_group.sprites()
-        # self.background_tree = spatial.KDTree([b.rect.center for b in self.background_list])
+        self.creature_tree = SpriteTree(self.global_sprites)
+        self.background_tree = SpriteTree(self.global_sprites)
+
         self.terrain_grid, self.fertility_grid = self._create_terrain()
 
         pygame.surfarray.blit_array(self.terrain_screen, self.terrain_grid)
         self.screen.blit(self.terrain_screen, (0, 0))
         pygame.display.update()
 
-    def add_sprite_to_park(self, sprite):
+    def add_entity_to_park(self, entity):
+        from park.creatures.creature import Creature
+        from park.creatures.barrier import Barrier
+
         self.global_sprite_counter += 1
-        self.global_sprites[self.global_sprite_counter] = sprite
-        self.global_sprite_tree.insert(self.global_sprite_counter, sprite.get_bounding_box())
+        self.global_sprites[self.global_sprite_counter] = entity
+
+        if isinstance(entity, Creature):
+            self.creature_tree.tree.insert(self.global_sprite_counter, entity.get_bounding_box())
+        elif isinstance(entity, Barrier):
+            self.creature_tree.tree.insert(self.global_sprite_counter, entity.get_bounding_box())
+            self.background_tree.tree.insert(self.global_sprite_counter, entity.get_bounding_box())
+        else:
+            # TODO some other sort of check
+            self.background_tree.tree.insert(self.global_sprite_counter, entity.get_bounding_box())
         return self.global_sprite_counter  # return as a unique index given to this sprite just in case
 
-    def remove_sprite_from_park(self, creature, sprite_id):
+    def remove_entity_from_park(self, entity, sprite_id):
+        from park.creatures.creature import Creature
         del self.global_sprites[sprite_id]
-        self.global_sprite_tree.delete(sprite_id, creature.get_bounding_box())
 
-    def update_sprite_in_park(self, creature, sprite_id, old_box):
-        self.global_sprite_tree.delete(sprite_id, old_box)
-        self.global_sprite_tree.insert(sprite_id, creature.get_bounding_box())
+        if isinstance(entity, Creature):
+            self.creature_tree.tree.delete(sprite_id, entity.get_bounding_box())
+        else:
+            # TODO some other sort of check
+            self.background_tree.tree.delete(sprite_id, entity.get_bounding_box())
 
-    def check_spawning_collision(self, creature, proposed_rect, ignore_grass=False):
-        return self.check_collision(creature, proposed_rect, ignore_self=False, ignore_grass=ignore_grass)
+    def update_entity_in_park(self, entity, sprite_id, old_box):
+        from park.creatures.creature import Creature
 
-    def check_moving_collision(self, creature, proposed_rect, ignore_grass=False):
-        return self.check_collision(creature, proposed_rect, ignore_self=True, ignore_grass=ignore_grass)
-
-    def check_collision(self, creature, proposed_rect, ignore_self, ignore_grass):
-        collisions = list(self.global_sprite_tree.intersection(creature.get_bounding_box(proposed_rect)))
-        if ignore_self and creature.sprite_id in collisions:
-            collisions.remove(creature.sprite_id)
-
-        if collisions:
-            # print(collisions)
-            pass
-
-        for collision in collisions:
-            # print("collision: ", collision)
-            collided_sprite = self.global_sprites[collision]
-            if (ignore_grass
-                    and type(collided_sprite) == park.creatures.grass.Grass):
-                continue
-            if collided_sprite.rect.colliderect(proposed_rect):
-                # print("collided!")
-                return True
-
-        # print("all good")
-        return False
+        if isinstance(entity, Creature):
+            self.creature_tree.tree.delete(sprite_id, old_box)
+            self.creature_tree.tree.insert(sprite_id, entity.get_bounding_box())
+        else:
+            # TODO some other sort of check
+            self.background_tree.tree.delete(sprite_id, old_box)
+            self.background_tree.tree.insert(sprite_id, entity.get_bounding_box())
 
     @staticmethod
     def _create_terrain():

@@ -1,12 +1,13 @@
 import sys
+from itertools import chain
 
 import pygame
 
 import park.park_util as pu
 from park.constructs.rock import create_rock
 from park.creatures.bug import Bug
-from park.creatures.swirly_bug import SwirlyBug
 from park.creatures.grass import Grass
+from park.creatures.swirly_bug import SwirlyBug
 from park.park_state import State
 
 
@@ -22,34 +23,39 @@ def run_park():
     creatures = pygame.sprite.RenderUpdates()
 
     # create grass
-    first_grass = Grass(state.screen, state, (240, 240), .5, 1)
+    first_grass = Grass(state, starting_position=(240, 240), scaler=.25, fertility=1, active_grass_group=active_grasses)
     first_grass.add(active_grasses)
     first_grass.add(grasses)
 
     # create rocks
     rocks = [
-        create_rock(state.screen, state, starting_position=(60, 60), size=2),
-        create_rock(state.screen, state, starting_position=(0, 420), size=4),
-        create_rock(state.screen, state, starting_position=(500, 420), size=1),
-        create_rock(state.screen, state, starting_position=(360, 260), size=3)
+        create_rock(state, starting_position=(60, 60), size=2),
+        create_rock(state, starting_position=(0, 420), size=4),
+        create_rock(state, starting_position=(500, 420), size=1),
+        create_rock(state, starting_position=(360, 260), size=3)
     ]
 
-    # add a bug
-    bug_one = Bug(state.screen, state, starting_position=(500, 500), scaler=3, fertility=1, speed=5)
-    bug_two = Bug(state.screen, state, starting_position=(200, 200), scaler=1, fertility=1, speed=10)
-    bug_three = Bug(state.screen, state, starting_position=(300, 300), scaler=1, fertility=1, speed=15)
+    # add bugs
+    bug_one = Bug(state, starting_position=(500, 500), scaler=3, fertility=1, speed=5)
+    bug_two = Bug(state, starting_position=(200, 200), scaler=1, fertility=1, speed=10)
+    bug_three = Bug(state, starting_position=(300, 300), scaler=1, fertility=1, speed=15)
     bug_one.add(creatures)
     bug_two.add(creatures)
     bug_three.add(creatures)
-    swirly_one = SwirlyBug(state.screen, state, starting_position=(800, 800), scaler=2, fertility=1, speed=5)
+
+    swirly_one =\
+        SwirlyBug(state, starting_position=(800, 800), scaler=2, fertility=1, speed=5)
     swirly_one.add(creatures)
-    swirly_two = SwirlyBug(state.screen, state, starting_position=(700, 150), scaler=1, fertility=1, speed=15)
+    swirly_two =\
+        SwirlyBug(state, starting_position=(700, 150), scaler=1, fertility=1, speed=15)
     swirly_two.add(creatures)
     going = True
+    # ticking_times = []
     while going:
-        state.clock.tick(20)
-        # print("all", len(state.global_sprites))
-        # print("active", len(active_sprites))
+        # start = time.time()
+        state.clock.tick(60)
+        # print("all grass", len(grasses))
+        # print("active", len(active_grasses))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
@@ -59,27 +65,53 @@ def run_park():
         for rock in rocks:
             rock.group.update()
 
-        # fill in creatures with background and redraw them, for movement
-        old_spots = [creature.rect for creature in creatures.sprites()]
+        # get old and new positions of all creatures
+        old_creature_rects = [creature.rect for creature in creatures.sprites()]
         creatures.update()
-        for rect in old_spots:
+        new_creature_rects = [creature.rect for creature in creatures.sprites()]
+
+        # fill in creatures with background and redraw them, for movement
+        for rect in old_creature_rects:
             state.screen.blit(state.terrain_screen, rect, rect)
 
-        dirty_recs = []
-        # TODO Get just the active grasses + grasses walked on
-        # TODO Otherwise it slows down a lot with a lot of grass
-        dirty_recs += grasses.draw(state.screen)
+        dirty_grass_rects = active_grasses.draw(state.screen)
 
-        for rock in rocks:
-            dirty_recs += rock.group.draw(state.screen)
+        dirty_rock_rects = [rect for rect_list in [rock.group.draw(state.screen) for rock in rocks]
+                            for rect in rect_list]
 
-        dirty_recs += creatures.draw(state.screen)
-        pygame.display.update(dirty_recs)
+        # take the background entities intersected by any creature and draw those
+        intersected_grasses = [state.global_sprites[sprite_id] for sprite_id in
+                               chain.from_iterable([state.background_tree.tree.intersection(
+                                   (rect.left,
+                                    rect.top,
+                                    rect.right,
+                                    rect.bottom))
+                                   for rect in old_creature_rects + new_creature_rects])]
+
+        ig_group = pygame.sprite.RenderUpdates()
+        for grass in intersected_grasses:
+            grass.add(ig_group)
+        intersected_grass_rects = ig_group.draw(state.screen)
+        ig_group.empty()
+
+        # finally draw the creatures new positions
+        dirty_creature_recs = creatures.draw(state.screen)
+
+        pygame.display.update(dirty_rock_rects + dirty_grass_rects + dirty_creature_recs + intersected_grass_rects)
 
         if not len(active_grasses):
             # going = False
             print("out of active grasses")
         # print(len(active_sprites))
+        # ticking_times.append((time.time() - start) * 1000)
+
+    # fig = plt.figure()
+    # graph = fig.add_subplot(111)
+    # graph.plot([i for i in range(1000)], ticking_times, 'r-o')
+    # plt.xlabel("tick count")
+    # plt.ylabel("time per tick")
+    # plt.grid(linestyle='-', linewidth='0.5', color='blue')
+    # plt.show()
 
 
 if __name__ == "__main__":

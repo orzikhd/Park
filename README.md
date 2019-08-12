@@ -37,7 +37,7 @@ Entities on this layer should be able to consider values from other layers for t
 ### Park's biggest questions
 - Should rocks be creatures or background entities? If they're creatures, can grass then grow under rocks?
   If they're background entities, can creatures move on rocks?
-  Maybe there will be a type of grass that can grow under rocks, or a type of creature that can move on rocks?
+  - Maybe there will be a type of grass that can grow under rocks, or a type of creature that can move on rocks?
+  - For now rocks/barriers will be both creatures and background entities
 - Can creatures manipulate background entities? A creature might trample grass
 - What other sorts of rocks should there be?
-- I noticed with the large bug that it created a couple pixels where grass wouldn't fill in ever after it left

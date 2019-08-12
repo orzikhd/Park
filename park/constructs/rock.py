@@ -31,6 +31,6 @@ def vertical_u_shaped(starting_position, size, scaler=1):
 rock_types = [square, horizontal_u_shaped, vertical_u_shaped]
 
 
-def create_rock(screen, state, starting_position, size, scaler=1):
+def create_rock(state, starting_position, size, scaler=1):
     rock_type = random.choice(rock_types)
-    return Multisprite(screen, state, rock_type(starting_position, size, scaler))
+    return Multisprite(state, rock_type(starting_position, size, scaler))

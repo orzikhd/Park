@@ -16,14 +16,17 @@ class Bug(Creature):
                  fertility: float,
                  speed: float):
         Creature.__init__(self, state, starting_position, scaler, fertility, speed)
+        self.x_offset = 0
+        self.y_offset = 0
 
     def _random_walk(self):
-        x_offset = random.choice([self.speed, 0, -self.speed])
-        y_offset = random.choice([self.speed, 0, -self.speed])
+        if random.random() < 0.25:
+            self.x_offset = random.choice([self.speed, 0, -self.speed])
+            self.y_offset = random.choice([self.speed, 0, -self.speed])
 
-        offset = math.sqrt(x_offset**2 + y_offset**2)
+        offset = math.hypot(self.x_offset, self.y_offset)
         if offset:
-            angle = math.atan2(-y_offset, x_offset)  # negative y_offset to account for reversed y axis
+            angle = math.atan2(-self.y_offset, self.x_offset)  # negative y_offset to account for reversed y axis
         else:
             angle = 0
 

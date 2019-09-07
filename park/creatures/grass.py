@@ -5,12 +5,12 @@ import typing
 import pygame
 
 from park.behaviors.spreads import Spreads
-from park.creatures import park_entity
+from park.creatures.park_entity import ParkEntity
 from park.park_state import State
 from park.park_util import CREATURE_IMAGE_SIZE
 
 
-class Grass(park_entity.ParkEntity):
+class Grass(ParkEntity):
     IMAGE_LOCATION = 'park\\pictures\\grass-{}.png'
 
     def __init__(self,
@@ -20,7 +20,7 @@ class Grass(park_entity.ParkEntity):
                  fertility: float,
                  active_grass_group):
         self.IMAGE_LOCATION = self._get_image_from_fertility(fertility)
-        park_entity.ParkEntity.__init__(self, state, starting_position, scaler, fertility)
+        ParkEntity.__init__(self, state, starting_position, scaler, fertility)
 
         self.spreads = Spreads(self.screen, self.rect, fertility)
         self.spread_options = self.spreads.get_neighboring_squares()
@@ -39,20 +39,23 @@ class Grass(park_entity.ParkEntity):
         else:
             return self.IMAGE_LOCATION.format("5")
 
+    def die(self):
+        # TODO signal to nearby grass to become active again
+        ParkEntity.die(self)
+
     def update(self):
         if not self.spread_options:
-            # self.groups()[0].remove(self)  # remove self from active group
-            self.remove(self.active_grass_group)
+            self.remove(self.active_grass_group)  # remove self from active group
             return
 
         if self.spreads.should_spread():
             chosen_spot = random.choice(self.spread_options)
             self.spread_options.remove(chosen_spot)
+
             if chosen_spot[0] < 0 \
-                    or chosen_spot[0] >= self.state.WIDTH \
+                    or chosen_spot[0] >= self.state.width \
                     or chosen_spot[1] < 0 \
-                    or chosen_spot[1] >= self.state.HEIGHT:
-                print("hit border")
+                    or chosen_spot[1] >= self.state.height:
                 return
 
             if self.state.background_tree.check_spawning_collision(

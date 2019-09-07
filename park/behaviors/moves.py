@@ -24,12 +24,13 @@ class Moves:
         offset, angle = deciding_function()
         x_offset = offset * math.cos(angle)
         y_offset = -offset * math.sin(angle)  # negative y_offset to account for reversed y axis
+
         new_move = self.creature.rect.move(x_offset, y_offset)
 
-        if new_move.left < 0 or new_move.right > self.creature.state.WIDTH:
+        if new_move.left < 0 or new_move.right > self.creature.state.width:
             new_move = self.creature.rect.move(-x_offset, y_offset)
 
-        if new_move.top < 0 or new_move.bottom > self.creature.state.HEIGHT:
+        if new_move.top < 0 or new_move.bottom > self.creature.state.height:
             new_move = self.creature.rect.move(x_offset, -y_offset)
 
         if (x_offset == 0 and y_offset == 0) or \

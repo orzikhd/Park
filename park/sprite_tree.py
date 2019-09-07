@@ -19,10 +19,15 @@ class SpriteTree:
     def check_moving_collision(self, creature, proposed_rect):
         return self.check_collision(creature, proposed_rect, ignore_self=True)
 
-    def check_collision(self, creature, proposed_rect, ignore_self):
+    def get_all_collisions(self, creature, proposed_rect, ignore_self):
         collisions = list(self.tree.intersection(creature.get_bounding_box(proposed_rect)))
         if ignore_self and creature.sprite_id in collisions:
             collisions.remove(creature.sprite_id)
+
+        return collisions
+
+    def check_collision(self, creature, proposed_rect, ignore_self):
+        collisions = self.get_all_collisions(creature, proposed_rect, ignore_self)
 
         if collisions:
             # print(collisions)

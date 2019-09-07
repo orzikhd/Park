@@ -46,6 +46,11 @@ class ParkEntity(pygame.sprite.Sprite):
                 rect.right,
                 rect.bottom)
 
+    # the entity should cease existing in the park at this point
+    def die(self):
+        self.state.remove_entity_from_park(self, self.sprite_id)
+        self.kill()
+
     # update function is inherited from Sprite and is called with every tick
     # default behavior is to do nothing, should be overwritten
     def update(self):

@@ -39,8 +39,17 @@ class Grass(ParkEntity):
         else:
             return self.IMAGE_LOCATION.format("5")
 
+    def activate(self):
+        self.add(self.active_grass_group)
+        self.spread_options = self.spreads.get_neighboring_squares()
+
     def die(self):
-        # TODO signal to nearby grass to become active again
+        # warn nearby grasses to become active
+        nearby_creatures = self.state.background_tree.get_nearest_creatures(creature=self, num_creatures=1)
+        for creature in nearby_creatures:
+            if isinstance(creature, Grass):
+                creature.activate()
+
         ParkEntity.die(self)
 
     def update(self):
@@ -52,6 +61,7 @@ class Grass(ParkEntity):
             chosen_spot = random.choice(self.spread_options)
             self.spread_options.remove(chosen_spot)
 
+            # ignore invalid spots
             if chosen_spot[0] < 0 \
                     or chosen_spot[0] >= self.state.width \
                     or chosen_spot[1] < 0 \

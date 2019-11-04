@@ -50,8 +50,9 @@ def run_park():
         SwirlyBug(state, starting_position=(700, 150), scaler=1, fertility=1, speed=15)
     swirly_two.add(creatures)
 
-    grazer_one = Grazer(state, starting_position=(380, 380), scaler=1, fertility=1, speed=10, viewing_distance=40)
-    grazer_one.add(creatures)
+    for i in range(5):
+        grazer = Grazer(state, starting_position=(100 * i, 150 * i), scaler=1, fertility=1, speed=10, viewing_distance=120)
+        grazer.add(creatures)
 
     going = True
     # ticking_times = []

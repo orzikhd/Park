@@ -34,7 +34,10 @@ class ParkEntity(pygame.sprite.Sprite):
         self.image: pygame.Surface
         self.rect: pygame.Rect
         self.image, self.rect = self._load_image_and_rect(starting_position)
-        self.sprite_id: int = self.state.add_entity_to_park(self)
+        self.sprite_id: int = self.state.add_entity_to_park(self, self._add_self_to_park)
+
+    def _add_self_to_park(self, new_id):
+        pass
 
     # helper function to return the 4 corners of a rect as a tuple
     # if the rect isn't provided, returns the corners of the rect of self

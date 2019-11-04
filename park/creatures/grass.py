@@ -27,6 +27,9 @@ class Grass(ParkEntity):
 
         self.active_grass_group = active_grass_group
 
+    def _add_self_to_park(self, new_id):
+        self.state.background_tree.tree.insert(new_id, self.get_bounding_box())
+
     def _get_image_from_fertility(self, fertility):
         if fertility < 0.02:
             return self.IMAGE_LOCATION.format("1")

@@ -43,32 +43,19 @@ class State:
         self.screen.blit(self.terrain_screen, (0, 0))
         pygame.display.update()
 
-    def add_entity_to_park(self, entity):
-        from park.creatures.creature import Creature
-        from park.creatures.barrier import Barrier
-
+    def add_entity_to_park(self, entity, adding_function):
         self.global_sprite_counter += 1
         self.global_sprites[self.global_sprite_counter] = entity
 
-        if isinstance(entity, Creature):
-            self.creature_tree.tree.insert(self.global_sprite_counter, entity.get_bounding_box())
-        elif isinstance(entity, Barrier):
-            self.creature_tree.tree.insert(self.global_sprite_counter, entity.get_bounding_box())
-            self.background_tree.tree.insert(self.global_sprite_counter, entity.get_bounding_box())
-        else:
-            # TODO some other sort of check
-            self.background_tree.tree.insert(self.global_sprite_counter, entity.get_bounding_box())
+        adding_function(self.global_sprite_counter)
+
         return self.global_sprite_counter  # return as a unique index given to this sprite just in case
 
     def remove_entity_from_park(self, entity, sprite_id):
-        from park.creatures.creature import Creature
         del self.global_sprites[sprite_id]
 
-        if isinstance(entity, Creature):
-            self.creature_tree.tree.delete(sprite_id, entity.get_bounding_box())
-        else:
-            # TODO some other sort of check
-            self.background_tree.tree.delete(sprite_id, entity.get_bounding_box())
+        self.creature_tree.tree.delete(sprite_id, entity.get_bounding_box())
+        self.background_tree.tree.delete(sprite_id, entity.get_bounding_box())
 
     def update_entity_in_park(self, entity, sprite_id, old_box):
         from park.creatures.creature import Creature

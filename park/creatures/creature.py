@@ -31,6 +31,9 @@ class Creature(ParkEntity):
 
         self.original_image = self.image
 
+    def _add_self_to_park(self, new_id):
+        self.state.creature_tree.tree.insert(new_id, self.get_bounding_box())
+
     # default behavior is to do nothing, should be overwritten
     def update(self):
         pass

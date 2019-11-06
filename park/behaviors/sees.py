@@ -1,11 +1,21 @@
 import math
 
 import pygame
+import heapq
+from dataclasses import dataclass, field
+from typing import Any, Tuple
 
 OCTAGON_ANGLE_DIFF = 45
 OCTAGON_ANGLES = [OCTAGON_ANGLE_DIFF * i for i in range(8)]
 
 WHITE = (255, 255, 255)
+
+
+@dataclass(order=True)
+class SeenSprite:
+    l1_distance: int  # sort sprites by their L1 distance from the Seeing creature
+    sprite: Any = field(compare=False)
+    offset: Tuple[int, int] = field(compare=False)
 
 
 class Sees:
@@ -20,6 +30,7 @@ class Sees:
         # TODO the view polygon should probably just be passed in somehow
 
     def see(self):
+        # TODO find a way to optimize this
         center_point = self.creature.rect.center
         center_x = center_point[0]
         center_y = center_point[1]
@@ -52,21 +63,26 @@ class Sees:
                   for angle in OCTAGON_ANGLES]
 
         collisions =\
-            set(self.creature.state.background_tree.get_all_collisions(self.creature, bounding_box, ignore_self=True))\
-            .union(set(self.creature.state.creature_tree.get_all_collisions(self.creature, bounding_box, ignore_self=True)))
+            set(self.creature.state.background_tree.get_all_collisions(self.creature,
+                                                                       bounding_box,
+                                                                       ignore_self=True))\
+            .union(set(self.creature.state.creature_tree.get_all_collisions(self.creature,
+                                                                            bounding_box,
+                                                                            ignore_self=True)))
 
         viewing_surface = pygame.Surface((self.viewing_distance*2, self.viewing_distance*2), pygame.SRCALPHA)
         pygame.draw.polygon(viewing_surface, WHITE, points)
         viewing_mask = pygame.mask.from_surface(viewing_surface)
 
-        seen_sprites = []
+        seen_sprites_heap = []
 
         for collision in collisions:
             collided_sprite = self.creature.state.global_sprites[collision]
 
             # some silly logic for getting the sprites within the view polygon using pygame
             # involving a pixel by pixel mask of the collided_sprite and overlapping it with the self.creature
-            collision_surface = pygame.Surface((collided_sprite.rect.width, collided_sprite.rect.height), pygame.SRCALPHA)
+            collision_surface = pygame.Surface((collided_sprite.rect.width,
+                                                collided_sprite.rect.height), pygame.SRCALPHA)
             collision_surface.fill(WHITE)  # the color is arbitrary, just fills 1s in the mask
             collision_mask = pygame.mask.from_surface(collision_surface)
             collision_offset = collided_sprite.rect[0] - bounding_box[0], collided_sprite.rect[1] - bounding_box[1]
@@ -74,6 +90,6 @@ class Sees:
 
             if exists_intersection:
                 offset = collided_sprite.rect.center[0] - center_x, collided_sprite.rect.center[1] - center_y
-                seen_sprites.append((offset, collided_sprite))
+                heapq.heappush(seen_sprites_heap, SeenSprite(abs(offset[0]) + abs(offset[1]), collided_sprite, offset))
 
-        return sorted(seen_sprites, key=lambda sp: abs(sp[0][0]) + abs(sp[0][1]))  # sorted by L1 distance between the two sprites
+        return seen_sprites_heap

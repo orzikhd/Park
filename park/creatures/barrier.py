@@ -12,7 +12,7 @@ class Barrier(park_entity.ParkEntity):
                  state: State,
                  starting_position: typing.Tuple[int, int],
                  scaler: float):
-        park_entity.ParkEntity.__init__(self, state, starting_position, scaler)
+        super().__init__(state, starting_position, scaler)
 
     def _add_self_to_park(self, new_id):
         self.state.creature_tree.tree.insert(new_id, self.get_bounding_box())

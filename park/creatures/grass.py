@@ -20,7 +20,7 @@ class Grass(ParkEntity):
                  fertility: float,
                  active_grass_group):
         self.IMAGE_LOCATION = self._get_image_from_fertility(fertility)
-        ParkEntity.__init__(self, state, starting_position, scaler, fertility)
+        super().__init__(state, starting_position, scaler, fertility)
 
         self.spreads = Spreads(self.screen, self.rect, fertility)
         self.spread_options = self.spreads.get_neighboring_squares()

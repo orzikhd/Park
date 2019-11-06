@@ -41,3 +41,4 @@ Entities on this layer should be able to consider values from other layers for t
   - For now rocks/barriers will be both creatures and background entities
 - Can creatures manipulate background entities? A creature might trample grass
 - What other sorts of rocks should there be?
+- What is the cost of having eyes?

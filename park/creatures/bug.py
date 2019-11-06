@@ -15,7 +15,7 @@ class Bug(Creature):
                  scaler: float,
                  fertility: float,
                  speed: float):
-        Creature.__init__(self, state, starting_position, scaler, fertility, speed)
+        super().__init__(state, starting_position, scaler, fertility, speed)
         self.x_offset = 0
         self.y_offset = 0
 
@@ -33,4 +33,5 @@ class Bug(Creature):
         return offset, angle
 
     def update(self):
+        self.dirty = 1
         self.movesBehavior.move(self._random_walk)

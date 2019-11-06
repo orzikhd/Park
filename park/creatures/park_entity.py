@@ -6,7 +6,7 @@ import park.park_util as pu
 from park.park_state import State
 
 
-class ParkEntity(pygame.sprite.Sprite):
+class ParkEntity(pygame.sprite.DirtySprite):
     """
     A basic entity of the park.
     ParkEntity inherits from Sprite and uses that for all PyGame logic.
@@ -26,13 +26,14 @@ class ParkEntity(pygame.sprite.Sprite):
                  starting_position: typing.Tuple[int, int],
                  scaler: float = 1,
                  fertility: float = 0):
-        pygame.sprite.Sprite.__init__(self)
+        super().__init__()
         self.state: State = state
         self.screen = self.state.screen
         self.scaler: float = scaler
         self.fertility: float = fertility
         self.image: pygame.Surface
         self.rect: pygame.Rect
+        self.dirty = 1
         self.image, self.rect = self._load_image_and_rect(starting_position)
         self.sprite_id: int = self.state.add_entity_to_park(self, self._add_self_to_park)
 
@@ -51,6 +52,7 @@ class ParkEntity(pygame.sprite.Sprite):
 
     # the entity should cease existing in the park at this point
     def die(self):
+        self.dirty = 0
         self.state.remove_entity_from_park(self, self.sprite_id)
         self.kill()
 

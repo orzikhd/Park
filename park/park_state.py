@@ -1,5 +1,4 @@
 from typing import Dict
-
 import numpy as np
 import pygame
 
@@ -58,6 +57,8 @@ class State:
         self.background_tree.tree.delete(sprite_id, entity.get_bounding_box())
 
     def update_entity_in_park(self, entity, sprite_id, old_box):
+        # the operation of deleting and inserting *looks* expensive, but timing it I found that
+        # each call of this method is almost instant
         from park.creatures.creature import Creature
 
         if isinstance(entity, Creature):

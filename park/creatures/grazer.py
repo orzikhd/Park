@@ -2,10 +2,11 @@ import math
 import random
 import typing
 
+from park.behaviors.sees import SeenSprite
 from park.behaviors.sees import Sees
 from park.creatures.creature import Creature
-from park.park_state import State
 from park.creatures.grass import Grass
+from park.park_state import State
 
 
 class Grazer(Creature):
@@ -19,7 +20,7 @@ class Grazer(Creature):
                  fertility: float,
                  speed: float,
                  viewing_distance: float):
-        Creature.__init__(self, state, starting_position, scaler, fertility, speed)
+        super().__init__(state, starting_position, scaler, fertility, speed)
 
         self.seesBehavior = Sees(self, viewing_distance)
 
@@ -34,7 +35,8 @@ class Grazer(Creature):
 
         offset = math.hypot(self.rand_x_offset, self.rand_y_offset)
         if offset:
-            angle = math.atan2(-self.rand_y_offset, self.rand_x_offset)  # negative y_offset to account for reversed y axis
+            # negative y_offset to account for reversed y axis
+            angle = math.atan2(-self.rand_y_offset, self.rand_x_offset)
         else:
             angle = 0
 
@@ -53,26 +55,23 @@ class Grazer(Creature):
         self.hunger = 0
 
     def update(self):
+        self.dirty = 1
+
         if self.hunger < 10:
             self.movesBehavior.move(self._random_walk)
             self.hunger += 1
             return
 
-        seen_sprites: typing.List[typing.Tuple[typing.Tuple[float, float], Creature]] = self.seesBehavior.see()
+        seen_sprites: typing.List[SeenSprite] = self.seesBehavior.see()
 
         # stop at the first (closest) creature that's a grass
         for seen_sprite in seen_sprites:
-            sp_offset = seen_sprite[0]
-            sp_creature = seen_sprite[1]
-            if isinstance(sp_creature, Grass):
-                if abs(sp_offset[0]) + abs(sp_offset[1]) < self.CHOMP_REACH:
-                    self._graze(sp_creature)
+            if isinstance(seen_sprite.sprite, Grass):
+                if seen_sprite.l1_distance < self.CHOMP_REACH:
+                    self._graze(seen_sprite.sprite)
                     return
                 else:
-                    self.movesBehavior.move(self._directed_walk(sp_offset))
+                    self.movesBehavior.move(self._directed_walk(seen_sprite.offset))
                     return
 
         self.movesBehavior.move(self._random_walk)
-
-
-

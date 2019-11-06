@@ -16,7 +16,7 @@ class SwirlyBug(Creature):
                  scaler: float,
                  fertility: float,
                  speed: float):
-        Creature.__init__(self, state, starting_position, scaler, fertility, speed)
+        super().__init__(state, starting_position, scaler, fertility, speed)
         self.angle = 0
 
     def _circle_walk(self):
@@ -24,4 +24,5 @@ class SwirlyBug(Creature):
         return self.speed, (self.angle / self.ROTATION_CONSTANT) * math.pi
 
     def update(self):
+        self.dirty = 1
         self.movesBehavior.move(self._circle_walk)

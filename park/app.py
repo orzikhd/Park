@@ -1,26 +1,27 @@
 import sys
+import time
 from itertools import chain
 
+import matplotlib.pyplot as plt
 import pygame
+from numpy.polynomial.polynomial import polyfit
 
 import park.park_util as pu
 from park.constructs.rock import create_rock
 from park.creatures.bug import Bug
 from park.creatures.grass import Grass
-from park.creatures.swirly_bug import SwirlyBug
 from park.creatures.grazer import Grazer
+from park.creatures.swirly_bug import SwirlyBug
 from park.park_state import State
-
-
 
 
 def run_park():
     # create game state
     state = pu.time_and_log(lambda: State(grid_depth=8, pixel_size=5), "Time to generate state:")
 
-    active_grasses = pygame.sprite.RenderUpdates()
-    grasses = pygame.sprite.RenderUpdates()
-    creatures = pygame.sprite.RenderUpdates()
+    active_grasses = pygame.sprite.LayeredDirty()
+    grasses = pygame.sprite.LayeredDirty()
+    creatures = pygame.sprite.LayeredDirty()
 
     # create grass
     first_grass = Grass(state, starting_position=(240, 240), scaler=.25, fertility=1, active_grass_group=active_grasses)
@@ -50,22 +51,37 @@ def run_park():
         SwirlyBug(state, starting_position=(700, 150), scaler=1, fertility=1, speed=15)
     swirly_two.add(creatures)
 
-    for i in range(5):
-        grazer = Grazer(state, starting_position=(100 * i, 150 * i), scaler=1, fertility=1, speed=10, viewing_distance=120)
+    for i in range(10):
+        grazer = Grazer(state, starting_position=(100 * i, 150 * i), scaler=1, fertility=1, speed=10, viewing_distance=12)
         grazer.add(creatures)
 
-    going = True
-    # ticking_times = []
-    while going:
-        park_tick(state, creatures, rocks, active_grasses, tick_speed=60)
+    # going = True
+    grass_times = []
+    creature_times = []
+    draw_times = []
+    ticking_times = []
+    while len(ticking_times) < 1000:
+        g, c, d, t = park_tick(state, creatures, rocks, active_grasses, tick_speed=60)
+        grass_times.append(g)
+        creature_times.append(c)
+        draw_times.append(d)
+        ticking_times.append(t)
 
-    # fig = plt.figure()
-    # graph = fig.add_subplot(111)
-    # graph.plot([i for i in range(1000)], ticking_times, 'r-o')
-    # plt.xlabel("tick count")
-    # plt.ylabel("time per tick")
-    # plt.grid(linestyle='-', linewidth='0.5', color='blue')
-    # plt.show()
+    print(state.global_sprite_counter)
+
+    fig = plt.figure()
+    graph = fig.add_subplot(111)
+    x = range(len(ticking_times))
+    graph.plot(x, ticking_times, 'o-r', linewidth=0.5)
+    b, m = polyfit(x, ticking_times, 1)
+    graph.plot(x, grass_times, 'o-g', linewidth=0.5)
+    graph.plot(x, creature_times, 'o-y', linewidth=0.5)
+    graph.plot(x, draw_times, 'o-k', linewidth=0.5)
+    graph.plot(x, b + m * x, '.-.c')
+    plt.xlabel("tick count")
+    plt.ylabel("time per tick")
+    plt.grid(linestyle='-', linewidth='0.5', color='blue')
+    plt.show()
 
 
 def run_test_park():
@@ -99,7 +115,8 @@ def run_test_park():
 
 
 def park_tick(state, creatures, rocks, active_grasses, tick_speed=10):
-    # start = time.time()
+    # TODO: instead of ordering updates/draws, try using layering with LayeredDirty
+    start = time.time()
     state.clock.tick(tick_speed)
     # print("all grass", len(grasses))
     # print("active", len(active_grasses))
@@ -108,6 +125,7 @@ def park_tick(state, creatures, rocks, active_grasses, tick_speed=10):
             sys.exit()
 
     active_grasses.update()
+    grass_time = time.time() - start
     # print("global counter", state.global_sprite_counter)
     for rock in rocks:
         rock.group.update()
@@ -116,6 +134,8 @@ def park_tick(state, creatures, rocks, active_grasses, tick_speed=10):
     old_creature_rects = [creature.rect for creature in creatures.sprites()]
     creatures.update()
     new_creature_rects = [creature.rect for creature in creatures.sprites()]
+
+    creature_time = time.time() - start - grass_time
 
     # fill in creatures with background and redraw them, for movement
     for rect in old_creature_rects:
@@ -151,11 +171,13 @@ def park_tick(state, creatures, rocks, active_grasses, tick_speed=10):
     #     dirty_rock_rects + dirty_grass_rects + dirty_creature_recs + intersected_grass_rects + seeing_rects)
     pygame.display.update(dirty_rock_rects + dirty_grass_rects + dirty_creature_recs + intersected_grass_rects)
 
+    drawing_time = time.time() - start - grass_time - creature_time
+
     if not len(active_grasses):
         # going = False
         print("out of active grasses")
     # print(len(active_sprites))
-    # return (time.time() - start) * 1000
+    return grass_time * 1000, creature_time * 1000, drawing_time * 1000, (time.time() - start) * 1000
 
 
 if __name__ == "__main__":

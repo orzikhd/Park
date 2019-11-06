@@ -10,7 +10,10 @@ class SpriteTree:
 
     def __init__(self, global_sprites):
         from park.creatures.park_entity import ParkEntity
+        properties = index.Property()
+        properties.dimension = 2
         self.tree = index.Index()
+
         self.global_sprites: Dict[int, ParkEntity] = global_sprites
 
     def check_spawning_collision(self, creature, proposed_rect):

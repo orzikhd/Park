@@ -24,7 +24,7 @@ class Creature(ParkEntity):
                  scaler: float,
                  fertility: float,
                  speed: float):
-        ParkEntity.__init__(self, state, starting_position, scaler, fertility)
+        super().__init__(state, starting_position, scaler, fertility)
 
         self.movesBehavior = Moves(self)
         self.speed = speed

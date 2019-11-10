@@ -27,10 +27,10 @@ class Moves:
 
         new_move = self.creature.rect.move(x_offset, y_offset)
 
-        if new_move.left < 0 or new_move.right > self.creature.state.width:
+        if new_move.left < 0 or new_move.right > self.creature.state.park_width:
             new_move = self.creature.rect.move(-x_offset, y_offset)
 
-        if new_move.top < 0 or new_move.bottom > self.creature.state.height:
+        if new_move.top < 0 or new_move.bottom > self.creature.state.park_height:
             new_move = self.creature.rect.move(x_offset, -y_offset)
 
         if (x_offset == 0 and y_offset == 0) or \

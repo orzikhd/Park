@@ -10,6 +10,9 @@ images = {}
 
 # images are expected to be 20x20 pixels
 CREATURE_IMAGE_SIZE = 20
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+PINK = (255, 192, 203)
 
 
 def load_image(name, scaler=1, colorkey=None):

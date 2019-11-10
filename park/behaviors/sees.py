@@ -1,14 +1,14 @@
-import math
-
-import pygame
 import heapq
+import math
 from dataclasses import dataclass, field
 from typing import Any, Tuple
 
+import pygame
+
+from park.park_util import WHITE
+
 OCTAGON_ANGLE_DIFF = 45
 OCTAGON_ANGLES = [OCTAGON_ANGLE_DIFF * i for i in range(8)]
-
-WHITE = (255, 255, 255)
 
 
 @dataclass(order=True)

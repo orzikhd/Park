@@ -66,9 +66,9 @@ class Grass(ParkEntity):
 
             # ignore invalid spots
             if chosen_spot[0] < 0 \
-                    or chosen_spot[0] >= self.state.width \
+                    or chosen_spot[0] >= self.state.park_width \
                     or chosen_spot[1] < 0 \
-                    or chosen_spot[1] >= self.state.height:
+                    or chosen_spot[1] >= self.state.park_height:
                 return
 
             if self.state.background_tree.check_spawning_collision(

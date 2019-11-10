@@ -20,13 +20,11 @@ def run_park():
     state = pu.time_and_log(lambda: State(grid_depth=8, pixel_size=5), "Time to generate state:")
 
     active_grasses = pygame.sprite.LayeredDirty()
-    grasses = pygame.sprite.LayeredDirty()
     creatures = pygame.sprite.LayeredDirty()
 
     # create grass
-    first_grass = Grass(state, starting_position=(240, 240), scaler=.25, fertility=1, active_grass_group=active_grasses)
-    first_grass.add(active_grasses)
-    first_grass.add(grasses)
+    active_grasses.add(
+        Grass(state, starting_position=(240, 240), scaler=.25, fertility=1, active_grass_group=active_grasses))
 
     # create rocks
     rocks = [
@@ -37,23 +35,20 @@ def run_park():
     ]
 
     # add bugs
-    bug_one = Bug(state, starting_position=(500, 500), scaler=3, fertility=1, speed=5)
-    bug_two = Bug(state, starting_position=(1000, 1000), scaler=1, fertility=1, speed=10)
-    bug_three = Bug(state, starting_position=(300, 300), scaler=1, fertility=1, speed=15)
-    bug_one.add(creatures)
-    bug_two.add(creatures)
-    bug_three.add(creatures)
+    [creatures.add(bug) for bug in [
+        Bug(state, starting_position=(500, 500), scaler=3, fertility=1, speed=5),
+        Bug(state, starting_position=(1000, 1000), scaler=1, fertility=1, speed=10),
+        Bug(state, starting_position=(300, 300), scaler=1, fertility=1, speed=15),
+    ]]
 
-    swirly_one =\
-        SwirlyBug(state, starting_position=(800, 800), scaler=2, fertility=1, speed=5)
-    swirly_one.add(creatures)
-    swirly_two =\
+    [creatures.add(swirly) for swirly in [
+        SwirlyBug(state, starting_position=(800, 800), scaler=2, fertility=1, speed=5),
         SwirlyBug(state, starting_position=(700, 150), scaler=1, fertility=1, speed=15)
-    swirly_two.add(creatures)
+    ]]
 
     for i in range(10):
-        grazer = Grazer(state, starting_position=(100 * i, 150 * i), scaler=1, fertility=1, speed=10, viewing_distance=12)
-        grazer.add(creatures)
+        creatures.add(
+            Grazer(state, starting_position=(100 * i, 150 * i), scaler=1, fertility=1, speed=10, viewing_distance=12))
 
     # going = True
     grass_times = []
@@ -67,7 +62,7 @@ def run_park():
         draw_times.append(d)
         ticking_times.append(t)
 
-    print(state.global_sprite_counter)
+    print("number of sprites: ", state.global_sprite_counter)
 
     fig = plt.figure()
     graph = fig.add_subplot(111)
@@ -115,7 +110,6 @@ def run_test_park():
 
 
 def park_tick(state, creatures, rocks, active_grasses, tick_speed=10):
-    # TODO: instead of ordering updates/draws, try using layering with LayeredDirty
     start = time.time()
     state.clock.tick(tick_speed)
     # print("all grass", len(grasses))
@@ -165,8 +159,8 @@ def park_tick(state, creatures, rocks, active_grasses, tick_speed=10):
     dirty_creature_recs = creatures.draw(state.screen)
 
     # TODO remove after debugging completes
-    # seeing_rects = [pygame.draw.polygon(state.screen, (255, 0, 0), grazer_one.seesBehavior.points, 1),
-    #                 pygame.draw.rect(state.screen, (0, 255, 0), grazer_one.seesBehavior.bounding_box, 1)]
+    # seeing_rects = [pygame.draw.polygon(state.park_screen, (255, 0, 0), grazer_one.seesBehavior.points, 1),
+    #                 pygame.draw.rect(state.park_screen, (0, 255, 0), grazer_one.seesBehavior.bounding_box, 1)]
     # pygame.display.update(
     #     dirty_rock_rects + dirty_grass_rects + dirty_creature_recs + intersected_grass_rects + seeing_rects)
     pygame.display.update(dirty_rock_rects + dirty_grass_rects + dirty_creature_recs + intersected_grass_rects)

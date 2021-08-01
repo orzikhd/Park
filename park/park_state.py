@@ -41,7 +41,6 @@ class State:
         self.park_screen: pygame.Surface = pygame.Surface((self.park_width, self.park_height))
 
         self.side_screen: pygame.Surface = pygame.Surface((self.side_screen_width, self.park_height))
-        self._init_side_screen()
 
         self.terrain_screen: pygame.Surface = pygame.Surface(self.park_screen.get_size())
 
@@ -93,15 +92,29 @@ class State:
             self.background_tree.tree.insert(sprite_id, entity.get_bounding_box())
 
     def update_side_screen(self):
-        self.screen.blit(self.side_screen, (self.border + self.park_width, 0))
-
-    def _init_side_screen(self):
         import park.park_util as pu
+
         self.side_screen.fill(pu.WHITE)
-        font = pygame.font.Font(None, 36)
+        font = pygame.font.Font(None, pu.TITLE_FONT_SIZE)
         text = font.render("HELLO, PARK", 1, pu.BLACK)
-        textpos = text.get_rect(centerx=self.side_screen.get_width() / 2)
-        self.side_screen.blit(text, textpos)
+        self.side_screen.blit(text, text.get_rect(centerx=self.side_screen.get_width() / 2))
+
+        font = pygame.font.Font(None, pu.INFO_FONT_SIZE)
+        text_lines = [
+            "Run Stats",
+            f"Current FPS: {self.clock.get_fps():.2f}",
+            f"Current Time: {pygame.time.get_ticks()}",
+        ]
+        label = [font.render(line, 1, pu.BLACK) for line in text_lines]
+        label_margin = 10
+        # each text line is rendered on the screen with its Y varying on its position in the list plus a margin
+        for line in range(len(label)):
+            self.side_screen.blit(label[line],
+                                  label[line].get_rect(centerx=self.side_screen.get_width() / 2,
+                                                       centery=self.side_screen.get_height() / 6
+                                                       + line * pu.INFO_FONT_SIZE
+                                                       + line * label_margin))
+        return self.screen.blit(self.side_screen, (self.border + self.park_width, 0))
 
     def _create_terrain(self):
         import park.constructs.terrain as pt

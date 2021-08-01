@@ -1,8 +1,6 @@
 import sys
 import time
 from itertools import chain
-
-import matplotlib.pyplot as plt
 import pygame
 from numpy.polynomial.polynomial import polyfit
 
@@ -14,10 +12,14 @@ from park.creatures.grazer import Grazer
 from park.creatures.swirly_bug import SwirlyBug
 from park.park_state import State
 
+import matplotlib.pyplot as plt
+
+PIXEL_SIZE = 5
+
 
 def run_park():
     # create game state
-    state = pu.time_and_log(lambda: State(grid_depth=8, pixel_size=5), "Time to generate state:")
+    state = pu.time_and_log(lambda: State(grid_depth=8, pixel_size=PIXEL_SIZE), "Time to generate state:")
 
     active_grasses = pygame.sprite.LayeredDirty()
     creatures = pygame.sprite.LayeredDirty()
@@ -55,27 +57,32 @@ def run_park():
     creature_times = []
     draw_times = []
     ticking_times = []
-    while len(ticking_times) < 1000:
+
+    while len(ticking_times) < 5000:
         g, c, d, t = park_tick(state, creatures, rocks, active_grasses, tick_speed=60)
         grass_times.append(g)
         creature_times.append(c)
         draw_times.append(d)
         ticking_times.append(t)
 
-    print("number of sprites: ", state.global_sprite_counter)
-
-    fig = plt.figure()
-    graph = fig.add_subplot(111)
     x = range(len(ticking_times))
-    graph.plot(x, ticking_times, 'o-r', linewidth=0.5)
     b, m = polyfit(x, ticking_times, 1)
-    graph.plot(x, grass_times, 'o-g', linewidth=0.5)
-    graph.plot(x, creature_times, 'o-y', linewidth=0.5)
-    graph.plot(x, draw_times, 'o-k', linewidth=0.5)
-    graph.plot(x, b + m * x, '.-.c')
+
+    fig = plt.figure(figsize=[10, 10])
+    graph = fig.add_subplot(111)
+    graph.plot(x, ticking_times, 'o-r', linewidth=0.5, label="ticking time")
+    graph.plot(x, b + m * x, '.-.c', label="tick time slope")
+    graph.plot(x, grass_times, 'o-g', linewidth=0.5, label="grass time")
+    graph.plot(x, creature_times, 'o-y', linewidth=0.5, label="creature time")
+    graph.plot(x, draw_times, 'o-k', linewidth=0.5, label="draw time")
     plt.xlabel("tick count")
     plt.ylabel("time per tick")
+    plt.legend(loc="lower right")
     plt.grid(linestyle='-', linewidth='0.5', color='blue')
+    plt.tight_layout(pad=1)
+
+    print("number of sprites: ", state.global_sprite_counter)
+
     plt.show()
 
 
@@ -163,7 +170,7 @@ def park_tick(state, creatures, rocks, active_grasses, tick_speed=10):
     #                 pygame.draw.rect(state.park_screen, (0, 255, 0), grazer_one.seesBehavior.bounding_box, 1)]
     # pygame.display.update(
     #     dirty_rock_rects + dirty_grass_rects + dirty_creature_recs + intersected_grass_rects + seeing_rects)
-    pygame.display.update(dirty_rock_rects + dirty_grass_rects + dirty_creature_recs + intersected_grass_rects)
+    pygame.display.update(dirty_rock_rects + dirty_grass_rects + dirty_creature_recs + intersected_grass_rects + [state.update_side_screen()])
 
     drawing_time = time.time() - start - grass_time - creature_time
 
@@ -176,6 +183,11 @@ def park_tick(state, creatures, rocks, active_grasses, tick_speed=10):
 
 if __name__ == "__main__":
     # larger context
+    import os
+
+    # position pygame window on screen
+    position = 300, 50
+    os.environ['SDL_VIDEO_WINDOW_POS'] = str(position[0]) + "," + str(position[1])
     pygame.init()
 
     # run_test_park()

@@ -14,6 +14,9 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 PINK = (255, 192, 203)
 
+TITLE_FONT_SIZE = 36
+INFO_FONT_SIZE = 25
+
 
 def load_image(name, scaler=1, colorkey=None):
     if (name, scaler) in images:

@@ -42,14 +42,14 @@ class Sees:
                                    self.viewing_distance * 2)
         # print("made viewing intersection bounding box", bounding_box)
         # TODO remove when done debug drawing
-        # self.bounding_box = bounding_box
+        self.bounding_box = bounding_box
 
-        # points = [(center_x + self.viewing_distance * math.cos(math.radians(angle)),
-        #            center_y + self.viewing_distance * math.sin(math.radians(angle)))
-        #           for angle in OCTAGON_ANGLES]
+        points = [(center_x + self.viewing_distance * math.cos(math.radians(angle)),
+                   center_y + self.viewing_distance * math.sin(math.radians(angle)))
+                  for angle in OCTAGON_ANGLES]
+        self.points = points
         # print("made octagon points", points)
         # TODO remove when done debug drawing
-        # self.points = points
 
         # construct a view polygon with radius of viewing_distance
         # the points that make up the view polygon need to be centered such that
@@ -69,7 +69,7 @@ class Sees:
             .union(set(self.creature.state.creature_tree.get_all_collisions(self.creature,
                                                                             bounding_box,
                                                                             ignore_self=True)))
-
+        # if len(collisions) > 10: print(f"c  {len(collisions)}")
         viewing_surface = pygame.Surface((self.viewing_distance*2, self.viewing_distance*2), pygame.SRCALPHA)
         pygame.draw.polygon(viewing_surface, WHITE, points)
         viewing_mask = pygame.mask.from_surface(viewing_surface)
@@ -92,4 +92,5 @@ class Sees:
                 offset = collided_sprite.rect.center[0] - center_x, collided_sprite.rect.center[1] - center_y
                 heapq.heappush(seen_sprites_heap, SeenSprite(abs(offset[0]) + abs(offset[1]), collided_sprite, offset))
 
+        # if len(seen_sprites_heap) > 10: print(f"h  {len(seen_sprites_heap)}")
         return seen_sprites_heap

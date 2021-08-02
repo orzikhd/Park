@@ -31,8 +31,6 @@ class ParkEntity(pygame.sprite.DirtySprite):
         self.screen = self.state.screen
         self.scaler: float = scaler
         self.fertility: float = fertility
-        self.image: pygame.Surface
-        self.rect: pygame.Rect
         self.dirty = 1
         self.image, self.rect = self._load_image_and_rect(starting_position)
         self.sprite_id: int = self.state.add_entity_to_park(self, self._add_self_to_park)
@@ -40,9 +38,11 @@ class ParkEntity(pygame.sprite.DirtySprite):
     def _add_self_to_park(self, new_id):
         pass
 
-    # helper function to return the 4 corners of a rect as a tuple
-    # if the rect isn't provided, returns the corners of the rect of self
     def get_bounding_box(self, rect=None):
+        """
+        Helper function to return the 4 corners of a rect as a tuple.
+        If the rect isn't provided, returns the corners of the rect of self
+        """
         # print(self, rect)
         rect = rect if rect else self.rect  # I'm sorry
         return (rect.left,
@@ -50,15 +50,19 @@ class ParkEntity(pygame.sprite.DirtySprite):
                 rect.right,
                 rect.bottom)
 
-    # the entity should cease existing in the park at this point
     def die(self):
+        """
+        The entity should cease existing in the park at this point.
+        """
         self.dirty = 0
         self.state.remove_entity_from_park(self, self.sprite_id)
         self.kill()
 
-    # update function is inherited from Sprite and is called with every tick
-    # default behavior is to do nothing, should be overwritten
     def update(self):
+        """
+        Update function is inherited from Sprite and is called with every tick
+        default behavior is to do nothing, should be overwritten
+        """
         pass
 
     def _load_image_and_rect(self, starting_position: typing.Tuple[int, int]):

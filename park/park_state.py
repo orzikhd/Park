@@ -57,14 +57,20 @@ class State:
         self.terrain_grid, self.fertility_grid = self._create_terrain()
         pygame.surfarray.blit_array(self.terrain_screen, self.terrain_grid)
 
+    def init_screen(self):
         # init the screen
         self.park_screen.blit(self.terrain_screen, (0, 0))
         self.screen.blit(self.park_screen, (0, 0))
-        self.update_side_screen()
-
-        pygame.display.update()
+        self.update_screen([])
 
     def add_entity_to_park(self, entity, adding_function):
+        """
+        Creates a new entity in the park.
+
+        :param entity - a ParkEntity to add to the park
+        :param adding_function - a callback to trigger with the entity's new ID, for any custom logic
+        :return unique ID for this entity
+        """
         self.global_sprite_counter += 1
         self.global_sprites[self.global_sprite_counter] = entity
 
@@ -73,12 +79,25 @@ class State:
         return self.global_sprite_counter  # return as a unique index given to this sprite just in case
 
     def remove_entity_from_park(self, entity, sprite_id):
+        """
+        Removes the given entity from the park.
+        :param entity: entity to remove
+        :param sprite_id: sprite ID for this entity as returned by the add function
+        """
         del self.global_sprites[sprite_id]
 
         self.creature_tree.tree.delete(sprite_id, entity.get_bounding_box())
         self.background_tree.tree.delete(sprite_id, entity.get_bounding_box())
 
     def update_entity_in_park(self, entity, sprite_id, old_box):
+        """
+        Updates an entity's location in the park.
+
+        :param entity: entity to update
+        :param sprite_id: sprite ID for this entity as returned by the add function
+        :param old_box: the entity's old location
+        """
+
         # the operation of deleting and inserting *looks* expensive, but timing it I found that
         # each call of this method is almost instant
         from park.creatures.creature import Creature
@@ -91,7 +110,12 @@ class State:
             self.background_tree.tree.delete(sprite_id, old_box)
             self.background_tree.tree.insert(sprite_id, entity.get_bounding_box())
 
-    def update_side_screen(self):
+    def _update_border(self):
+        import park.park_util as pu
+        border_box = pygame.draw.rect(self.screen, pu.PINK, (self.park_width, 0, self.border, self.park_height))
+        return [border_box]
+
+    def _update_side_screen(self):
         import park.park_util as pu
 
         self.side_screen.fill(pu.WHITE)
@@ -114,7 +138,18 @@ class State:
                                                        centery=self.side_screen.get_height() / 6
                                                        + line * pu.INFO_FONT_SIZE
                                                        + line * label_margin))
-        return self.screen.blit(self.side_screen, (self.border + self.park_width, 0))
+
+        # returning dirty rects of side screen to flip later
+        return [self.screen.blit(self.side_screen, (self.border + self.park_width, 0))]
+
+    def update_screen(self, dirty_rects):
+        """
+        Wrapper over pygame.display.update to update any passed in "dirty rects" or stale areas of the screen.
+        Also updates any other areas of the screen that are related to the state but not part of the park.
+        """
+        # pygame.display.update(dirty_rects + self._update_side_screen() + self._update_border())
+        self._update_side_screen() + self._update_border()
+        pygame.display.flip()  # seems like its faster to just update the whole screen than to do it by rects
 
     def _create_terrain(self):
         import park.constructs.terrain as pt

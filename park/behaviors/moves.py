@@ -42,7 +42,7 @@ class Moves:
             # print("updating location from ", self.get_bounding_box(old_move), "to", self.get_bounding_box())
             self.creature.state.update_entity_in_park(self.creature,
                                                       self.creature.sprite_id,
-                                                      self.creature.get_bounding_box(old_move))
+                                                      old_box=self.creature.get_bounding_box(old_move))
             return True
 
         return False

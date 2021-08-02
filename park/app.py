@@ -15,18 +15,23 @@ from park.park_state import State
 import matplotlib.pyplot as plt
 
 PIXEL_SIZE = 5
+FPS = 60
 
 
 def run_park():
     # create game state
     state = pu.time_and_log(lambda: State(grid_depth=8, pixel_size=PIXEL_SIZE), "Time to generate state:")
+    state.init_screen()
 
     active_grasses = pygame.sprite.LayeredDirty()
     creatures = pygame.sprite.LayeredDirty()
 
     # create grass
     active_grasses.add(
-        Grass(state, starting_position=(240, 240), scaler=.25, fertility=1, active_grass_group=active_grasses))
+        Grass(state, starting_position=(240, 240), scaler=.25, fertility=1, active_grass_group=active_grasses),
+        Grass(state, starting_position=(800, 800), scaler=.25, fertility=1, active_grass_group=active_grasses),
+        Grass(state, starting_position=(240, 800), scaler=.25, fertility=1, active_grass_group=active_grasses)
+    )
 
     # create rocks
     rocks = [
@@ -48,22 +53,34 @@ def run_park():
         SwirlyBug(state, starting_position=(700, 150), scaler=1, fertility=1, speed=15)
     ]]
 
-    for i in range(10):
+    for i in range(5):
         creatures.add(
-            Grazer(state, starting_position=(100 * i, 150 * i), scaler=1, fertility=1, speed=10, viewing_distance=12))
+            Grazer(state, starting_position=(100 * i, 150 * i), scaler=1, fertility=1, speed=10, viewing_distance=20))
 
     # going = True
     grass_times = []
     creature_times = []
     draw_times = []
     ticking_times = []
+    # rect_counts = []
 
-    while len(ticking_times) < 5000:
-        g, c, d, t = park_tick(state, creatures, rocks, active_grasses, tick_speed=60)
+    print("Incubating Park...")
+    # run park for a bit without showing anything
+    while len(ticking_times) < 2000:
+        g, c, d, t = park_tick(state, creatures, rocks, active_grasses, tick_speed=300, display=False)
         grass_times.append(g)
         creature_times.append(c)
         draw_times.append(d)
         ticking_times.append(t)
+
+    print("Displaying Park.")
+    while len(ticking_times) < 5000:
+        g, c, d, t = park_tick(state, creatures, rocks, active_grasses, tick_speed=FPS)
+        grass_times.append(g)
+        creature_times.append(c)
+        draw_times.append(d)
+        ticking_times.append(t)
+        # rect_counts.append(r)
 
     x = range(len(ticking_times))
     b, m = polyfit(x, ticking_times, 1)
@@ -75,10 +92,16 @@ def run_park():
     graph.plot(x, grass_times, 'o-g', linewidth=0.5, label="grass time")
     graph.plot(x, creature_times, 'o-y', linewidth=0.5, label="creature time")
     graph.plot(x, draw_times, 'o-k', linewidth=0.5, label="draw time")
-    plt.xlabel("tick count")
-    plt.ylabel("time per tick")
+    graph.set_xlabel("tick count")
+    graph.set_ylabel("time per tick")
     plt.legend(loc="lower right")
+
+    # graph2 = graph.twinx()  # put another graph in the same plot on the right side
+    # graph2.set_ylabel("count rects to draw")
+    # graph2.plot(x, rect_counts, '.-m', linewidth=0.5, label="rect count")
+
     plt.grid(linestyle='-', linewidth='0.5', color='blue')
+    plt.ylim(0, 50)
     plt.tight_layout(pad=1)
 
     print("number of sprites: ", state.global_sprite_counter)
@@ -116,7 +139,7 @@ def run_test_park():
         park_tick(state, creatures, rocks, active_grasses, tick_speed=1)
 
 
-def park_tick(state, creatures, rocks, active_grasses, tick_speed=10):
+def park_tick(state, creatures, rocks, active_grasses, tick_speed=10, display=True):
     start = time.time()
     state.clock.tick(tick_speed)
     # print("all grass", len(grasses))
@@ -138,39 +161,48 @@ def park_tick(state, creatures, rocks, active_grasses, tick_speed=10):
 
     creature_time = time.time() - start - grass_time
 
-    # fill in creatures with background and redraw them, for movement
-    for rect in old_creature_rects:
-        state.screen.blit(state.terrain_screen, rect, rect)
-
     dirty_grass_rects = active_grasses.draw(state.screen)
 
     dirty_rock_rects = [rect for rect_list in [rock.group.draw(state.screen) for rock in rocks]
                         for rect in rect_list]
 
-    # take the background entities intersected by any creature and draw those
-    intersected_grasses = [state.global_sprites[sprite_id] for sprite_id in
-                           chain.from_iterable([state.background_tree.tree.intersection(
-                               (rect.left,
-                                rect.top,
-                                rect.right,
-                                rect.bottom))
-                               for rect in old_creature_rects + new_creature_rects])]
+    # fill in creatures with background and redraw them, for movement
+    if display:
+        for rect in old_creature_rects:
+            state.screen.blit(source=state.terrain_screen, dest=rect, area=rect)
 
-    ig_group = pygame.sprite.RenderUpdates()
-    for grass in intersected_grasses:
-        grass.add(ig_group)
-    intersected_grass_rects = ig_group.draw(state.screen)
-    ig_group.empty()
+        # take the background entities intersected by any creature and draw those
+        intersected_grasses = [state.global_sprites[sprite_id] for sprite_id in
+                               chain.from_iterable([state.background_tree.tree.intersection(
+                                   (rect.left,
+                                    rect.top,
+                                    rect.right,
+                                    rect.bottom))
+                                   for rect in old_creature_rects + new_creature_rects])]
 
-    # finally draw the creatures new positions
-    dirty_creature_recs = creatures.draw(state.screen)
+        ig_group = pygame.sprite.RenderUpdates()
+        for grass in intersected_grasses:
+            grass.add(ig_group)
+        intersected_grass_rects = ig_group.draw(state.screen)
+        ig_group.empty()
 
-    # TODO remove after debugging completes
-    # seeing_rects = [pygame.draw.polygon(state.park_screen, (255, 0, 0), grazer_one.seesBehavior.points, 1),
-    #                 pygame.draw.rect(state.park_screen, (0, 255, 0), grazer_one.seesBehavior.bounding_box, 1)]
-    # pygame.display.update(
-    #     dirty_rock_rects + dirty_grass_rects + dirty_creature_recs + intersected_grass_rects + seeing_rects)
-    pygame.display.update(dirty_rock_rects + dirty_grass_rects + dirty_creature_recs + intersected_grass_rects + [state.update_side_screen()])
+        # finally draw the creatures new positions
+        dirty_creature_recs = creatures.draw(state.screen)
+
+        # TODO remove after debugging completes
+        # seeing_rects = [rect
+        #                 for creature in creatures if isinstance(creature, Grazer)
+        #                 for rect in [
+        #                     pygame.draw.polygon(state.screen, (255, 0, 0), creature.seesBehavior.points, 1),
+        #                     pygame.draw.rect(state.screen, (0, 255, 0), creature.seesBehavior.bounding_box, 1)]
+        #                 ]
+        # print(seeing_rects)
+        # state.update_screen(
+        #     dirty_rock_rects + dirty_grass_rects + dirty_creature_recs + intersected_grass_rects + seeing_rects)
+        rects_to_update = dirty_rock_rects + dirty_grass_rects + dirty_creature_recs + intersected_grass_rects
+        # print(f"r {len(rects_to_update)}")
+
+        state.update_screen(rects_to_update)
 
     drawing_time = time.time() - start - grass_time - creature_time
 

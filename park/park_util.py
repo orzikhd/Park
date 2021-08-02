@@ -22,7 +22,7 @@ def load_image(name, scaler=1, colorkey=None):
     if (name, scaler) in images:
         image = images[(name, scaler)]
     else:
-        print("didnt triggered cache")
+        # print("didnt triggered cache")
         try:
             image = pygame.image.load(name)
         except pygame.error:

@@ -34,6 +34,7 @@ class ParkEntity(pygame.sprite.DirtySprite):
         self.dirty = 1
         self.image, self.rect = self._load_image_and_rect(starting_position)
         self.sprite_id: int = self.state.add_entity_to_park(self, self._add_self_to_park)
+        self.alive = True
 
     def _add_self_to_park(self, new_id):
         pass
@@ -50,12 +51,16 @@ class ParkEntity(pygame.sprite.DirtySprite):
                 rect.right,
                 rect.bottom)
 
+    def is_alive(self):
+        return self.alive;
+
     def die(self):
         """
         The entity should cease existing in the park at this point.
         """
         self.dirty = 0
         self.state.remove_entity_from_park(self, self.sprite_id)
+        self.alive = False
         self.kill()
 
     def update(self):

@@ -28,9 +28,10 @@ def run_park():
 
     # create grass
     active_grasses.add(
-        Grass(state, starting_position=(240, 240), scaler=.25, fertility=1, active_grass_group=active_grasses),
-        Grass(state, starting_position=(800, 800), scaler=.25, fertility=1, active_grass_group=active_grasses),
-        Grass(state, starting_position=(240, 800), scaler=.25, fertility=1, active_grass_group=active_grasses)
+        Grass(state, starting_position=(240, 240), scaler=.5, fertility=1, active_grass_group=active_grasses),
+        Grass(state, starting_position=(800, 800), scaler=.5, fertility=1, active_grass_group=active_grasses),
+        Grass(state, starting_position=(240, 800), scaler=.5, fertility=1, active_grass_group=active_grasses),
+        Grass(state, starting_position=(800, 240), scaler=.5, fertility=1, active_grass_group=active_grasses)
     )
 
     # create rocks
@@ -49,13 +50,13 @@ def run_park():
     ]]
 
     [creatures.add(swirly) for swirly in [
-        SwirlyBug(state, starting_position=(800, 800), scaler=2, fertility=1, speed=5),
-        SwirlyBug(state, starting_position=(700, 150), scaler=1, fertility=1, speed=15)
+        SwirlyBug(state, starting_position=(800, 800), scaler=3, fertility=1, speed=5),
+        SwirlyBug(state, starting_position=(700, 150), scaler=2, fertility=1, speed=15)
     ]]
 
     for i in range(5):
         creatures.add(
-            Grazer(state, starting_position=(100 * i, 150 * i), scaler=1, fertility=1, speed=10, viewing_distance=20))
+            Grazer(state, starting_position=(100 * i, 150 * i), scaler=1.25, fertility=1, speed=10, viewing_distance=20))
 
     # going = True
     grass_times = []
@@ -111,32 +112,33 @@ def run_park():
 
 def run_test_park():
     # create game state
-    state = pu.time_and_log(lambda: State(grid_depth=4, pixel_size=20), "Time to generate state:")
+    state = pu.time_and_log(lambda: State(grid_depth=6, pixel_size=10), "Time to generate state:")
+    state.init_screen()
 
     active_grasses = pygame.sprite.RenderUpdates()
     grasses = pygame.sprite.RenderUpdates()
     creatures = pygame.sprite.RenderUpdates()
 
     # create grass
-    first_grass = Grass(state, starting_position=(120, 200), scaler=1, fertility=0, active_grass_group=active_grasses)
+    first_grass = Grass(state, starting_position=(120, 200), scaler=.5, fertility=1, active_grass_group=active_grasses)
     first_grass.add(active_grasses)
     first_grass.add(grasses)
 
     # create rocks
     rocks = [
-        create_rock(state, starting_position=(0, 0), size=2)
+        create_rock(state, starting_position=(150, 230), size=2)
     ]
     # swirly_one = \
     #     SwirlyBug(state, starting_position=(100, 200), scaler=1, fertility=1, speed=5)
     # swirly_one.add(creatures)
 
-    grazer_one = Grazer(state, starting_position=(150, 230), scaler=1, fertility=1, speed=10, viewing_distance=120)
+    grazer_one = Grazer(state, starting_position=(170, 280), scaler=1, fertility=1, speed=10, viewing_distance=120)
     grazer_one.add(creatures)
 
     going = True
     # ticking_times = []
     while going:
-        park_tick(state, creatures, rocks, active_grasses, tick_speed=1)
+        park_tick(state, creatures, rocks, active_grasses, tick_speed=30)
 
 
 def park_tick(state, creatures, rocks, active_grasses, tick_speed=10, display=True):
@@ -199,16 +201,17 @@ def park_tick(state, creatures, rocks, active_grasses, tick_speed=10, display=Tr
         # print(seeing_rects)
         # state.update_screen(
         #     dirty_rock_rects + dirty_grass_rects + dirty_creature_recs + intersected_grass_rects + seeing_rects)
-        rects_to_update = dirty_rock_rects + dirty_grass_rects + dirty_creature_recs + intersected_grass_rects
+        # rects_to_update = dirty_rock_rects + dirty_grass_rects + dirty_creature_recs + intersected_grass_rects
         # print(f"r {len(rects_to_update)}")
 
-        state.update_screen(rects_to_update)
+        state.update_screen([])
 
     drawing_time = time.time() - start - grass_time - creature_time
 
     if not len(active_grasses):
+        pass
         # going = False
-        print("out of active grasses")
+        # print("out of active grasses")
     # print(len(active_sprites))
     return grass_time * 1000, creature_time * 1000, drawing_time * 1000, (time.time() - start) * 1000
 

@@ -63,7 +63,7 @@ class ParkEntity(pygame.sprite.DirtySprite):
         self.alive = False
         self.kill()
 
-    def update(self):
+    def update(self, *args):
         """
         Update function is inherited from Sprite and is called with every tick
         default behavior is to do nothing, should be overwritten

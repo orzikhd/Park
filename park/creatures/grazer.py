@@ -83,7 +83,7 @@ class Grazer(Creature):
                     return seen_sprite
             return None
 
-        if self.hunger < 5:
+        if self.hunger < 2:
             self.movesBehavior.move(self._random_walk)
             self.hunger += 1
             return

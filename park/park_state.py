@@ -156,7 +156,8 @@ class State:
         import park.park_util as pu
 
         noise_grid = pu.time_and_log(
-            lambda: park.diamond_square.DiamondSquare(self.grid_size).create_diamond_square_map(),
+            lambda: park.diamond_square.DiamondSquare(self.grid_size)
+                .create_diamond_square_map(low_val=0, high_val=100),
             "Time to generate noise grid:")
 
         # scale noise grid into fertility grid
@@ -174,7 +175,8 @@ class State:
         scaled_colors = np.kron(colors, np.ones((self.pixel_size, self.pixel_size, 1), dtype=float))
         assert scaled_colors.shape[0] == self.park_width and scaled_colors.shape[1] == self.park_height
 
-        # ferts = park.constructs.park_background.get_ferts()
+        # import statistics
+        # ferts = park.constructs.terrain.get_ferts()
         # print("ferts: ", len(ferts))
         # print("max", max(ferts))
         # print("min", min(ferts))

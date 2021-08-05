@@ -79,8 +79,10 @@ class Grass(ParkEntity):
                                               int(CREATURE_IMAGE_SIZE * self.scaler))):
                 return
 
-            env_fertility = self.state.fertility_grid[chosen_spot] / 1000
-            random_noise = (random.random() - .5) / 100
+            # new fertility is based on the env fertility with some small noise
+            # we assume that the park's fertility is between 0 and 100 TODO read variable
+            env_fertility = self.state.fertility_grid[chosen_spot] / 1000  # 0 to .1
+            random_noise = (random.random() - .7) / 100  # 0.003
 
             new_fertility = env_fertility + random_noise
             new_fertility = st.mean([new_fertility, self.fertility])

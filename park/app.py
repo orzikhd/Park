@@ -10,10 +10,12 @@ from park.creatures.bug import Bug
 from park.creatures.grass import Grass
 from park.creatures.grazer import Grazer
 from park.creatures.swirly_bug import SwirlyBug
+from park.layered_dirty_cutoff import LayeredDirtyCutoff
 from park.park_state import State
 
 import matplotlib.pyplot as plt
 
+GRASS_CUTOFF = 300
 PIXEL_SIZE = 5
 FPS = 60
 
@@ -23,15 +25,15 @@ def run_park():
     state = pu.time_and_log(lambda: State(grid_depth=8, pixel_size=PIXEL_SIZE), "Time to generate state:")
     state.init_screen()
 
-    active_grasses = pygame.sprite.LayeredDirty()
+    active_grasses = LayeredDirtyCutoff(GRASS_CUTOFF)
     creatures = pygame.sprite.LayeredDirty()
 
     # create grass
     active_grasses.add(
-        Grass(state, starting_position=(240, 240), scaler=.5, fertility=1, active_grass_group=active_grasses),
-        Grass(state, starting_position=(800, 800), scaler=.5, fertility=1, active_grass_group=active_grasses),
-        Grass(state, starting_position=(240, 800), scaler=.5, fertility=1, active_grass_group=active_grasses),
-        Grass(state, starting_position=(800, 240), scaler=.5, fertility=1, active_grass_group=active_grasses)
+        Grass(state, starting_position=(240, 240), scaler=.5, fertility=.1, active_grass_group=active_grasses),
+        Grass(state, starting_position=(800, 800), scaler=.5, fertility=.4, active_grass_group=active_grasses),
+        Grass(state, starting_position=(240, 800), scaler=.5, fertility=.5, active_grass_group=active_grasses),
+        Grass(state, starting_position=(800, 240), scaler=.5, fertility=.6, active_grass_group=active_grasses)
     )
 
     # create rocks
@@ -54,7 +56,7 @@ def run_park():
         SwirlyBug(state, starting_position=(700, 150), scaler=2, fertility=1, speed=15)
     ]]
 
-    for i in range(5):
+    for i in range(10):
         creatures.add(
             Grazer(state, starting_position=(100 * i, 150 * i), scaler=1.25, fertility=1, speed=10, viewing_distance=20))
 
@@ -67,7 +69,7 @@ def run_park():
 
     print("Incubating Park...")
     # run park for a bit without showing anything
-    while len(ticking_times) < 2000:
+    while len(ticking_times) < 0:
         g, c, d, t = park_tick(state, creatures, rocks, active_grasses, tick_speed=300, display=False)
         grass_times.append(g)
         creature_times.append(c)
@@ -75,7 +77,7 @@ def run_park():
         ticking_times.append(t)
 
     print("Displaying Park.")
-    while len(ticking_times) < 5000:
+    while len(ticking_times) < 2000:
         g, c, d, t = park_tick(state, creatures, rocks, active_grasses, tick_speed=FPS)
         grass_times.append(g)
         creature_times.append(c)
@@ -86,24 +88,31 @@ def run_park():
     x = range(len(ticking_times))
     b, m = polyfit(x, ticking_times, 1)
 
-    fig = plt.figure(figsize=[10, 10])
-    graph = fig.add_subplot(111)
-    graph.plot(x, ticking_times, 'o-r', linewidth=0.5, label="ticking time")
-    graph.plot(x, b + m * x, '.-.c', label="tick time slope")
-    graph.plot(x, grass_times, 'o-g', linewidth=0.5, label="grass time")
-    graph.plot(x, creature_times, 'o-y', linewidth=0.5, label="creature time")
-    graph.plot(x, draw_times, 'o-k', linewidth=0.5, label="draw time")
-    graph.set_xlabel("tick count")
-    graph.set_ylabel("time per tick")
-    plt.legend(loc="lower right")
+    # fig = plt.figure(figsize=[10, 10])
+    # graph = fig.add_subplot(111)
+    fig, axs = plt.subplots(4, sharex='all', sharey='all', figsize=[10, 10])
+    axs[0].plot(x, ticking_times, 'or', linewidth=0.5, label="ticking time")
+    axs[0].plot(x, b + m * x, '.-.c', label="tick time slope")
+    axs[1].plot(x, grass_times, 'og', linewidth=0.5, label="grass time")
+    axs[2].plot(x, creature_times, 'oy', linewidth=0.5, label="creature time")
+    axs[3].plot(x, draw_times, 'ok', linewidth=0.5, label="draw time")
+    # plt.xlabel("tick count")
+    # plt.ylabel("time per tick")
+    # plt.legend(loc="lower right")
+
+    for ax in axs:
+        ax.grid(linestyle='-', linewidth='0.5', color='blue')
+        ax.set(xlabel="tick count", ylabel="time per tick")
+        ax.legend(loc="lower right")
+        ax.label_outer()
 
     # graph2 = graph.twinx()  # put another graph in the same plot on the right side
     # graph2.set_ylabel("count rects to draw")
     # graph2.plot(x, rect_counts, '.-m', linewidth=0.5, label="rect count")
 
-    plt.grid(linestyle='-', linewidth='0.5', color='blue')
-    plt.ylim(0, 50)
-    plt.tight_layout(pad=1)
+    # plt.grid(linestyle='-', linewidth='0.5', color='blue')
+    # plt.ylim(0, 50)
+    fig.tight_layout(pad=1)
 
     print("number of sprites: ", state.global_sprite_counter)
 

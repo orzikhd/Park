@@ -16,17 +16,19 @@ from park.park_state import State
 import matplotlib.pyplot as plt
 
 GRASS_CUTOFF = 300
-PIXEL_SIZE = 5
+PIXEL_SIZE = 10
 FPS = 60
 
 
 def run_park():
     # create game state
-    state = pu.time_and_log(lambda: State(grid_depth=8, pixel_size=PIXEL_SIZE), "Time to generate state:")
+    state = pu.time_and_log(lambda: State(grid_depth=7, pixel_size=PIXEL_SIZE), "Time to generate state:")
     state.init_screen()
 
     active_grasses = LayeredDirtyCutoff(GRASS_CUTOFF)
     creatures = pygame.sprite.LayeredDirty()
+
+    # TODO - find smarter / more interesting strategy for placing initial park elements
 
     # create grass
     active_grasses.add(
@@ -56,7 +58,7 @@ def run_park():
         SwirlyBug(state, starting_position=(700, 150), scaler=2, fertility=1, speed=15)
     ]]
 
-    for i in range(10):
+    for i in range(8):
         creatures.add(
             Grazer(state, starting_position=(100 * i, 150 * i), scaler=1.25, fertility=1, speed=10, viewing_distance=20))
 
@@ -77,12 +79,18 @@ def run_park():
         ticking_times.append(t)
 
     print("Displaying Park.")
-    while len(ticking_times) < 2000:
-        g, c, d, t = park_tick(state, creatures, rocks, active_grasses, tick_speed=FPS)
-        grass_times.append(g)
-        creature_times.append(c)
-        draw_times.append(d)
-        ticking_times.append(t)
+    # while len(ticking_times) < 2000:
+    while True:
+        try:
+            g, c, d, t = park_tick(state, creatures, rocks, active_grasses, tick_speed=FPS)
+            grass_times.append(g)
+            creature_times.append(c)
+            draw_times.append(d)
+            ticking_times.append(t)
+        except TypeError:
+            print("Park is closing.")
+            break
+
         # rect_counts.append(r)
 
     x = range(len(ticking_times))
@@ -156,8 +164,9 @@ def park_tick(state, creatures, rocks, active_grasses, tick_speed=10, display=Tr
     # print("all grass", len(grasses))
     # print("active", len(active_grasses))
     for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            sys.exit()
+        if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+            pygame.quit()
+            return
 
     active_grasses.update()
     grass_time = time.time() - start

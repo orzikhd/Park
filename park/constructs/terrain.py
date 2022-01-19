@@ -13,6 +13,11 @@ def get_color_from_fertility(fertility):
     return Terrain.dirt_colors[min(int(transformed_fert), 9)]
 
 
+def put_color_underwater(color_tuple):
+    r, g, b = color_tuple
+    return r * .4, g * .9, b * 1.3
+
+
 class Terrain:
     # in order of increasing fertility
     dirt_colors = [(164, 158, 150),

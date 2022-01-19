@@ -103,7 +103,7 @@ class DiamondSquare:
         mid_value = math.floor((low_val + high_val) / 2)
         quarter_value = mid_value / 2
         three_quart_value = mid_value + mid_value / 2
-        seed_options = [mid_value, mid_value, quarter_value, three_quart_value, three_quart_value]
+        seed_options = [mid_value, mid_value, quarter_value, three_quart_value, three_quart_value, three_quart_value]
 
         # initialize grid with corners
         left = top = 0

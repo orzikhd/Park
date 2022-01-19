@@ -15,6 +15,7 @@ class State:
 
     SIDE_SCREEN_WIDTH = 100
     BORDER = 2
+    SEA_LEVEL = 50
 
     def __init__(self, grid_depth: int, pixel_size: int):
         import park.park_util as pu
@@ -54,7 +55,7 @@ class State:
         self.background_tree = SpriteTree(self.global_sprites)
 
         # init the terrain
-        self.terrain_grid, self.fertility_grid = self._create_terrain()
+        self.terrain_grid, self.fertility_grid, self.topography = self._create_terrain()
         pygame.surfarray.blit_array(self.terrain_screen, self.terrain_grid)
 
     def init_screen(self):
@@ -157,7 +158,7 @@ class State:
 
         noise_grid = pu.time_and_log(
             lambda: park.diamond_square.DiamondSquare(self.grid_size)
-                .create_diamond_square_map(low_val=0, high_val=100),
+            .create_diamond_square_map(low_val=0, high_val=100),
             "Time to generate noise grid:")
 
         # scale noise grid into fertility grid
@@ -181,4 +182,33 @@ class State:
         # print("max", max(ferts))
         # print("min", min(ferts))
         # print("median", statistics.median(ferts))
-        return scaled_colors, scaled_fertility
+
+        # add water
+        height_grid = pu.time_and_log(
+            lambda: park.diamond_square.DiamondSquare(self.grid_size)
+            .create_diamond_square_map(low_val=0, high_val=100),
+            "Time to generate height grid:")
+        # relax height to smooth it out
+        self._relax_grid(height_grid)
+        self._relax_grid(height_grid)
+        self._relax_grid(height_grid)
+
+        scaled_height = np.kron(height_grid, np.ones((self.pixel_size, self.pixel_size), dtype=float))
+
+        for x in range(self.park_width):
+            for y in range(self.park_height):
+                if scaled_height[x, y] < 50:
+                    # print(scaled_height[x, y])
+                    scaled_colors[x, y] = pt.put_color_underwater(scaled_colors[x, y])
+
+        return scaled_colors, scaled_fertility, scaled_height
+
+    @staticmethod
+    def _relax_grid(grid):
+        for x in range(grid.shape[0] - 1):
+            for y in range(grid.shape[1] - 1):
+                grid[x, y] = (grid[x, y]
+                              + grid[x - 1, y]
+                              + grid[x + 1, y]
+                              + grid[x, y - 1]
+                              + grid[x, y + 1]) / 5

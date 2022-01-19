@@ -71,6 +71,9 @@ class Grass(ParkEntity):
                     or chosen_spot[1] >= self.state.park_height:
                 return
 
+            if self.state.topography[chosen_spot] < self.state.SEA_LEVEL:
+                return
+
             if self.state.background_tree.check_spawning_collision(
                     creature=self,
                     proposed_rect=pygame.Rect(chosen_spot[0],

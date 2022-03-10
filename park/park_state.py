@@ -13,7 +13,7 @@ class State:
     pixel_size: Scales the park, so a higher pixel size makes it more "zoomed in"
     """
 
-    SIDE_SCREEN_WIDTH = 100
+    SIDE_SCREEN_WIDTH = 50
     BORDER = 2
     SEA_LEVEL = 50
 
@@ -194,10 +194,11 @@ class State:
         self._relax_grid(height_grid)
 
         scaled_height = np.kron(height_grid, np.ones((self.pixel_size, self.pixel_size), dtype=float))
+        assert scaled_height.shape[0] == self.park_width and scaled_height.shape[1] == self.park_height
 
         for x in range(self.park_width):
             for y in range(self.park_height):
-                if scaled_height[x, y] < 50:
+                if scaled_height[x, y] < self.SEA_LEVEL:
                     # print(scaled_height[x, y])
                     scaled_colors[x, y] = pt.put_color_underwater(scaled_colors[x, y])
 

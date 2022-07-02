@@ -38,9 +38,9 @@ class Moves:
 
         # turn them around if at boundary
         if new_move.left < 0 or new_move.right >= self.creature.state.park_width:
-            new_move = self.creature.rect.move(-x_offset, y_offset)
+            new_move = new_move.move(-x_offset, 0)
         if new_move.top < 0 or new_move.bottom >= self.creature.state.park_height:
-            new_move = self.creature.rect.move(x_offset, -y_offset)
+            new_move = new_move.move(0, -y_offset)
 
         rendering_angle = Moves.round_angle(math.degrees(angle))
         self.creature.image = pygame.transform.rotate(self.original_image, rendering_angle)

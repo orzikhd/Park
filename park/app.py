@@ -60,7 +60,7 @@ def run_park():
 
     for i in range(8):
         creatures.add(
-            Grazer(state, starting_position=(100 * i, 150 * i), scaler=1.25, fertility=1, speed=10, viewing_distance=20))
+            Grazer(state, starting_position=(100 * i, 150 * i), scaler=1.25, fertility=1, speed=10, viewing_distance=40))
 
     # going = True
     grass_times = []
@@ -87,8 +87,11 @@ def run_park():
             creature_times.append(c)
             draw_times.append(d)
             ticking_times.append(t)
-        except TypeError:
+        except TypeError as e:
             print("Park is closing.")
+
+            if len(ticking_times) <= 0:
+                raise e
             break
 
         # rect_counts.append(r)
@@ -129,7 +132,11 @@ def run_park():
 
 def run_test_park():
     # create game state
-    state = pu.time_and_log(lambda: State(grid_depth=6, pixel_size=10), "Time to generate state:")
+    test_fps = 30
+    state = pu.time_and_log(lambda: State(grid_depth=6,
+                                          pixel_size=10,
+                                          tick_speed=test_fps,
+                                          sea_level=10), "Time to generate state:")
     state.init_screen()
 
     creatures, rocks, active_grasses = generate_test_entities(state)
@@ -137,7 +144,7 @@ def run_test_park():
     going = True
     # ticking_times = []
     while going:
-        park_tick(state, creatures, rocks, active_grasses, tick_speed=30)
+        park_tick(state, creatures, rocks, active_grasses, tick_speed=test_fps)
 
 
 def generate_test_entities(state):
@@ -199,7 +206,7 @@ def park_tick(state, creatures, rocks, active_grasses, tick_speed=10, display=Tr
             state.screen.blit(source=state.terrain_screen, dest=rect, area=rect)
 
         # take the background entities intersected by any creature and draw those
-        intersected_grasses = [state.global_sprites[sprite_id] for sprite_id in
+        intersected_grasses = [state.global_entities[sprite_id] for sprite_id in
                                chain.from_iterable([state.background_tree.tree.intersection(
                                    (rect.left,
                                     rect.top,
@@ -252,71 +259,3 @@ if __name__ == "__main__":
 
     # run_test_park()
     run_park()
-
-'''
-size = width, height = 1080, 920
-speed = [2, 2]
-black = 0, 0, 0
-
-screen = pygame.display.set_mode(size)
-
-ball = pygame.image.load("C:\\Users\\Dennis\\AppData\\Local\\Temp\\intro_ball.gif")
-ballrect = ball.get_rect()
-
-while True:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            sys.exit()
-
-    ballrect = ballrect.move(speed)
-    if ballrect.left < 0 or ballrect.right > width:
-        speed[0] = -speed[0]
-
-    if ballrect.top < 0 or ballrect.bottom > height:
-        speed[1] = -speed[1]
-
-    screen.fill(black)
-    screen.blit(ball, ballrect)
-    pygame.display.flip()
-    pygame.time.delay(10)
-'''
-
-'''
-class GameObject:
-    def __init__(self, image, height, speed):
-        self.speed = speed
-        self.image = image
-        self.pos = image.get_rect().move(0, height)
-
-    def move(self):
-        self.pos = self.pos.move(self.speed, 0)
-        if self.pos.right > 600:
-            self.pos.left = 0
-
-
-size = width, height = 1080, 920
-screen = pygame.display.set_mode(size)
-ball = pygame.image.load("C:\\Users\\Dennis\\AppData\\Local\\Temp\\intro_ball.gif").convert_alpha()
-ball.convert()
-
-black = 0, 0, 0
-
-objects = []
-for x in range(10):
-    o = GameObject(ball, x*40, x)
-    objects.append(o)
-
-while True:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            sys.exit()
-
-    screen.fill(black)
-
-    for o in objects:
-        o.move()
-        screen.blit(o.image, o.pos)
-
-    pygame.display.update()
-    pygame.time.delay(10)
-'''

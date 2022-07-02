@@ -11,19 +11,21 @@ class State:
     A State does all the bookkeeping for the state of the Park.
     grid_depth: This is the depth to run the symmetric dirt procedural generation
     pixel_size: Scales the park, so a higher pixel size makes it more "zoomed in"
+    tick_speed: How many ticks per second the park will run for
     """
 
     SIDE_SCREEN_WIDTH = 50
     BORDER = 2
-    SEA_LEVEL = 50
 
-    def __init__(self, grid_depth: int, pixel_size: int):
+    def __init__(self, grid_depth: int, pixel_size: int, tick_speed=60, sea_level=50):
         import park.park_util as pu
         from park.creatures.park_entity import ParkEntity
 
         # set all the boundary and scaling numbers
         self.grid_depth = grid_depth
         self.pixel_size = pixel_size
+        self.tick_speed = tick_speed
+        self.sea_level = sea_level
         self.grid_size = 2 ** grid_depth + 1  # Non-scaled length of one side of the park grid
         self.park_width = pixel_size * self.grid_size  # width of the park grid scaled by pixel size
         self.park_height = pixel_size * self.grid_size  # height of the park grid scaled by pixel size
@@ -48,11 +50,11 @@ class State:
         self.clock = pygame.time.Clock()
 
         # init all the state and tracking
-        self.global_sprites: Dict[int, ParkEntity] = {}
+        self.global_entities: Dict[int, ParkEntity] = {}
         self.global_sprite_counter = -1
 
-        self.creature_tree = SpriteTree(self.global_sprites)
-        self.background_tree = SpriteTree(self.global_sprites)
+        self.creature_tree = SpriteTree(self.global_entities)
+        self.background_tree = SpriteTree(self.global_entities)
 
         # init the terrain
         self.terrain_grid, self.fertility_grid, self.topography = self._create_terrain()
@@ -73,7 +75,7 @@ class State:
         :return unique ID for this entity
         """
         self.global_sprite_counter += 1
-        self.global_sprites[self.global_sprite_counter] = entity
+        self.global_entities[self.global_sprite_counter] = entity
 
         adding_function(self.global_sprite_counter)
 
@@ -85,7 +87,7 @@ class State:
         :param entity: entity to remove
         :param sprite_id: sprite ID for this entity as returned by the add function
         """
-        del self.global_sprites[sprite_id]
+        del self.global_entities[sprite_id]
 
         self.creature_tree.tree.delete(sprite_id, entity.get_bounding_box())
         self.background_tree.tree.delete(sprite_id, entity.get_bounding_box())
@@ -196,7 +198,7 @@ class State:
 
         for x in range(self.park_width):
             for y in range(self.park_height):
-                if scaled_height[x, y] < self.SEA_LEVEL:
+                if scaled_height[x, y] < self.sea_level:
                     # print(scaled_height[x, y])
                     scaled_colors[x, y] = pt.put_color_underwater(scaled_colors[x, y])
 

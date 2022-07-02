@@ -72,11 +72,11 @@ class ParkEntity(pygame.sprite.DirtySprite):
 
     def current_location_is_valid(self):
         return self.rect.left >= 0 \
-                and self.rect.right < self.state.park_width \
-                and self.rect.top >= 0 \
-                and self.rect.bottom < self.state.park_height \
-                and self.state.topography[self.rect.centerx, self.rect.centery] \
-                >= self.state.SEA_LEVEL
+            and self.rect.right <= self.state.park_width \
+            and self.rect.top >= 0 \
+            and self.rect.bottom <= self.state.park_height \
+            and self.state.topography[self.rect.centerx, self.rect.centery] \
+            >= self.state.sea_level
 
     def _load_image_and_rect(self, starting_position: typing.Tuple[int, int]):
         image, rect = pu.load_image(self.IMAGE_LOCATION, self.scaler)

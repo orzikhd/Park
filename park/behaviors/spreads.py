@@ -29,9 +29,9 @@ class Spreads:
 
         for square in list(possible_squares):
             if square[0] < 0 \
-                    or square[0] >= self.screen.get_rect().right \
+                    or square[0] + self.rect.width > self.screen.get_rect().right \
                     or square[1] < 0 \
-                    or square[1] >= self.screen.get_rect().bottom:
+                    or square[1] + self.rect.height > self.screen.get_rect().bottom:
                 possible_squares.remove(square)
         # print(possible_squares)
         return list(possible_squares)

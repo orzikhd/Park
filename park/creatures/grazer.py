@@ -2,7 +2,8 @@ import math
 import random
 from typing import Tuple, Optional, List
 
-from park.behaviors.sees import SeenSprite
+from park.behaviors.chomps import Chomps
+from park.behaviors.sees import SeenEntity
 from park.behaviors.sees import Sees
 from park.creatures.creature import Creature
 from park.creatures.grass import Grass
@@ -16,9 +17,9 @@ class Grazer(Creature):
     Grazers are creatures that eat grass.
     """
     IMAGE_LOCATION = 'park\\pictures\\grazer.png'
-    CHOMP_REACH = 10
+    CHOMP_REACH = 2
     MEMORY_SIZE = 8
-    HUNGRY_INTERVAL = 60
+    HUNGRY_INTERVAL = 1
 
     def __init__(self,
                  state: State,
@@ -30,12 +31,15 @@ class Grazer(Creature):
         super().__init__(state, starting_position, scaler, fertility, speed)
 
         self.seesBehavior = Sees(self, viewing_distance)
-        self.target: Optional[SeenSprite] = None
+        self.chompsBehavior = Chomps(self,
+                                     self.HUNGRY_INTERVAL,
+                                     self.CHOMP_REACH * self.state.pixel_size)
+        self.target: Optional[SeenEntity] = None
         self.badTargets = deque(maxlen=self.MEMORY_SIZE)
 
         self.rand_x_offset = 0
         self.rand_y_offset = 0
-        self.hunger = 10
+        self.hunger = 0
 
     def _random_walk(self):
         if random.random() < 0.25:
@@ -59,15 +63,6 @@ class Grazer(Creature):
 
         return lambda: (math.hypot(x_offset, y_offset), angle)
 
-    def _graze(self, creature):
-        if creature.is_alive():
-            # print("Ate grass")
-            creature.die()
-            self.hunger = 0
-        else:
-            print("Tried to eat something that was already dead :(")
-        self.target = None
-
     def update(self):
         """
         A grazer looks for grass to eat when its hungry.
@@ -80,20 +75,18 @@ class Grazer(Creature):
 
         self.dirty = 1
 
-        # print(f"Target: {self.target}")
-
         # stop at the first (closest) creature that's a grass
-        def searching_behavior(seen_sprites: List[SeenSprite]):
+        def searching_behavior(seen_sprites: List[SeenEntity]):
             for seen_sprite in seen_sprites:
                 # if seen_sprite.sprite in self.badTargets:
                 #     print(f"skipped bad target from {len(self.badTargets)} -- {self.badTargets}")
-                if isinstance(seen_sprite.sprite, Grass) and seen_sprite.sprite not in self.badTargets:
+                if isinstance(seen_sprite.entity, Grass) and seen_sprite.entity not in self.badTargets:
                     return seen_sprite
             return None
 
-        if self.hunger < self.HUNGRY_INTERVAL:
+        if not self.chompsBehavior.hungry():
+            # not hungry yet!
             self.movesBehavior.move(self._random_walk)
-            self.hunger += 1
             return
 
         # determine the target if one exists
@@ -104,7 +97,7 @@ class Grazer(Creature):
                 picked_sprite = self.target
             else:
                 # in the case the offset hasn't changed, we can't make progress towards our target so lets give up
-                self.badTargets.append(self.target.sprite)
+                self.badTargets.append(self.target.entity)
                 self.target = None
                 picked_sprite = None
         else:
@@ -112,10 +105,12 @@ class Grazer(Creature):
 
         # determine what to do with the target if one exists
         if picked_sprite:
-            if picked_sprite.l1_distance <= self.CHOMP_REACH:
-                self._graze(picked_sprite.sprite)
+            if self.chompsBehavior.chomp(picked_sprite.entity):
+                self.target = None
             else:
+                # didn't chomp yet, pursue target
                 self.target = picked_sprite
                 self.movesBehavior.move(self._directed_walk(self.target.offset))
         else:
+            # didn't find any grass!
             self.movesBehavior.move(self._random_walk)

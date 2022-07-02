@@ -50,7 +50,7 @@ class Moves:
 
         if not self.creature.state.creature_tree.check_moving_collision(self.creature, new_move) \
                 and not self.creature.state.topography[new_move.centerx, new_move.centery] \
-                < self.creature.state.SEA_LEVEL:
+                < self.creature.state.sea_level:
             self.creature.rect = new_move
 
             # print("updating location from ", self.get_bounding_box(old_move), "to", self.get_bounding_box())

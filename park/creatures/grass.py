@@ -80,7 +80,7 @@ class Grass(ParkEntity):
                     or chosen_spot[1] >= self.state.park_height:
                 return
 
-            if self.state.topography[chosen_spot] < self.state.SEA_LEVEL:
+            if self.state.topography[chosen_spot] < self.state.sea_level:
                 return
 
             if self.state.background_tree.check_spawning_collision(

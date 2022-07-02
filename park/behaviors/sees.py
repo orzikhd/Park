@@ -5,22 +5,22 @@ from typing import Any, Tuple
 
 import pygame
 
-from park.creatures.park_entity import ParkEntity
 from park.park_util import WHITE
+from park.rect_util import get_rect_offset, offset_to_l1_distance
 
 OCTAGON_ANGLE_DIFF = 45
 OCTAGON_ANGLES = [OCTAGON_ANGLE_DIFF * i for i in range(8)]
 
 
 @dataclass(order=True)
-class SeenSprite:
+class SeenEntity:
     l1_distance: int  # sort sprites by their L1 distance from the Seeing creature
-    sprite: Any = field(compare=False)
+    entity: Any = field(compare=False)
     offset: Tuple[int, int] = field(compare=False)
 
 
 def _offset_to_distance(offset):
-    return abs(offset[0]) + abs(offset[1])  # just L1 distance for now
+    return offset_to_l1_distance(offset)  # just L1 distance for now
 
 
 class Sees:
@@ -42,21 +42,14 @@ class Sees:
                                                                             bounding_box,
                                                                             ignore_self=True)))
 
-    def _get_sprite_offset(self, other_sprite: ParkEntity):
-        """
-        Determine the offset to another sprite, useful to know how to move towards it.
-        """
-        return other_sprite.rect.center[0] - self.creature.rect.center[0], \
-               other_sprite.rect.center[1] - self.creature.rect.center[1]
-
-    def update_seen_sprite(self, seen_sprite: SeenSprite):
-        seen_sprite.offset = self._get_sprite_offset(seen_sprite.sprite)
+    def update_seen_sprite(self, seen_sprite: SeenEntity):
+        seen_sprite.offset = get_rect_offset(self.creature.rect, seen_sprite.entity.rect)
         seen_sprite.l1_distance = _offset_to_distance(seen_sprite.offset)
 
-    def see(self, searching_behavior):
+    def see(self, searching_behavior) -> SeenEntity:
         """
         The creature sees.
-        :param searching_behavior: this function should take a list typing.List[SeenSprite] and
+        :param searching_behavior: this function should take a list typing.List[SeenEntity] and
         peruse it for its goal. If it picks a sprite, it should return it, otherwise return None.
         :return: this creature's picked sprite, or None if it didn't find one
         """
@@ -92,9 +85,9 @@ class Sees:
         inner_collisions = self._get_box_collisions(inner_box)
 
         for collision in inner_collisions:
-            collided_sprite = self.creature.state.global_sprites[collision]
-            offset = self._get_sprite_offset(collided_sprite)
-            heapq.heappush(seen_sprites_heap, SeenSprite(_offset_to_distance(offset), collided_sprite, offset))
+            collided_entity = self.creature.state.global_entities[collision]
+            offset = get_rect_offset(self.creature.rect, collided_entity.rect)
+            heapq.heappush(seen_sprites_heap, SeenEntity(_offset_to_distance(offset), collided_entity, offset))
 
         picked_inner_sprite = searching_behavior(seen_sprites_heap)
         if picked_inner_sprite:
@@ -121,20 +114,20 @@ class Sees:
         viewing_mask = pygame.mask.from_surface(viewing_surface)
 
         for collision in collisions:
-            collided_sprite = self.creature.state.global_sprites[collision]
+            collided_entity = self.creature.state.global_entities[collision]
 
             # some silly logic for getting the sprites within the view polygon using pygame
             # involving a pixel by pixel mask of the collided_sprite and overlapping it with the self.creature
-            collision_surface = pygame.Surface((collided_sprite.rect.width,
-                                                collided_sprite.rect.height), pygame.SRCALPHA)
+            collision_surface = pygame.Surface((collided_entity.rect.width,
+                                                collided_entity.rect.height), pygame.SRCALPHA)
             collision_surface.fill(WHITE)  # the color is arbitrary, just fills 1s in the mask
             collision_mask = pygame.mask.from_surface(collision_surface)
-            collision_offset = collided_sprite.rect[0] - bounding_box[0], collided_sprite.rect[1] - bounding_box[1]
+            collision_offset = collided_entity.rect[0] - bounding_box[0], collided_entity.rect[1] - bounding_box[1]
             exists_intersection = viewing_mask.overlap(collision_mask, collision_offset)
 
             if exists_intersection:
-                offset = self._get_sprite_offset(collided_sprite)
-                heapq.heappush(seen_sprites_heap, SeenSprite(_offset_to_distance(offset), collided_sprite, offset))
+                offset = get_rect_offset(self.creature.rect, collided_entity.rect)
+                heapq.heappush(seen_sprites_heap, SeenEntity(_offset_to_distance(offset), collided_entity, offset))
 
         # if len(seen_sprites_heap) > 10: print(f"h  {len(seen_sprites_heap)}")
         return searching_behavior(seen_sprites_heap)

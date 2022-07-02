@@ -12,9 +12,13 @@ from collections import deque
 
 
 class Grazer(Creature):
+    """
+    Grazers are creatures that eat grass.
+    """
     IMAGE_LOCATION = 'park\\pictures\\grazer.png'
     CHOMP_REACH = 10
     MEMORY_SIZE = 8
+    HUNGRY_INTERVAL = 60
 
     def __init__(self,
                  state: State,
@@ -70,6 +74,10 @@ class Grazer(Creature):
         It's lazy so if it sees grass, it'll walk to it without seeing if the grass moved. Why would grass move, right?
         If it's not hungry, it'll wander aimlessly. Maybe some day it shouldn't.
         """
+        if not self.current_location_is_valid():
+            print("Dead on arrival!")
+            self.die()
+
         self.dirty = 1
 
         # print(f"Target: {self.target}")
@@ -83,7 +91,7 @@ class Grazer(Creature):
                     return seen_sprite
             return None
 
-        if self.hunger < 2:
+        if self.hunger < self.HUNGRY_INTERVAL:
             self.movesBehavior.move(self._random_walk)
             self.hunger += 1
             return

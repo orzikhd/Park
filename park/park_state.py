@@ -189,9 +189,7 @@ class State:
             .create_diamond_square_map(low_val=0, high_val=100),
             "Time to generate height grid:")
         # relax height to smooth it out
-        self._relax_grid(height_grid)
-        self._relax_grid(height_grid)
-        self._relax_grid(height_grid)
+        self._relax_grid(height_grid, times=3)
 
         scaled_height = np.kron(height_grid, np.ones((self.pixel_size, self.pixel_size), dtype=float))
         assert scaled_height.shape[0] == self.park_width and scaled_height.shape[1] == self.park_height
@@ -205,11 +203,20 @@ class State:
         return scaled_colors, scaled_fertility, scaled_height
 
     @staticmethod
-    def _relax_grid(grid):
-        for x in range(grid.shape[0] - 1):
-            for y in range(grid.shape[1] - 1):
-                grid[x, y] = (grid[x, y]
-                              + grid[x - 1, y]
-                              + grid[x + 1, y]
-                              + grid[x, y - 1]
-                              + grid[x, y + 1]) / 5
+    def _relax_grid(grid, times=1):
+        """
+        Relaxes the values in a grid.
+
+        This is basically making each value to be the average of values around it.
+        :param grid: grid to relax
+        :param times: how many times to relax it
+        :return:
+        """
+        for time in range(times):
+            for x in range(grid.shape[0] - 1):
+                for y in range(grid.shape[1] - 1):
+                    grid[x, y] = (grid[x, y]
+                                  + grid[x - 1, y]
+                                  + grid[x + 1, y]
+                                  + grid[x, y - 1]
+                                  + grid[x, y + 1]) / 5

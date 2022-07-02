@@ -21,7 +21,7 @@ Park should somewhat consist of three layers.
 ### Terrain
 The terrain layer is currently procedurally generated dirt.
 It's got a level of fertility to it that should somehow effect things on other layers.
-Maybe someday there could be water in the terrain.
+There are also height values to the terrain. Currently this just determines where water is placed based on a sea level.
 
 ### Background
 The background layer is for static entities that primarily Spread.
@@ -34,6 +34,13 @@ They do whatever.
 Entities on this layer should just collide with other creatures on placement.
 Entities on this layer should be able to consider values from other layers for their behavior.
 
+### Entity Ideas
+In no particular order
+  - Lilypads, a background entity that lives and spreads in water but dies if it's surrounded by entities
+  - Weeds, a background entity that gains fertilization near water and overrides grass when more fertile
+  - Munchers, a creature that eats grazers (grazers should run away to be given a fair chance to live)
+  - Fish, a creature that only lives in water
+
 ### Park's biggest questions
 - Should rocks be creatures or background entities? If they're creatures, can grass then grow under rocks?
   If they're background entities, can creatures move on rocks?
@@ -42,3 +49,4 @@ Entities on this layer should be able to consider values from other layers for t
 - Can creatures manipulate background entities? A creature might trample grass
 - What other sorts of rocks should there be?
 - What is the cost of having eyes?
+- How should creatures be born?

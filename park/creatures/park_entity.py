@@ -34,7 +34,7 @@ class ParkEntity(pygame.sprite.DirtySprite):
         self.dirty = 1
         self.image, self.rect = self._load_image_and_rect(starting_position)
         self.sprite_id: int = self.state.add_entity_to_park(self, self._add_self_to_park)
-        self.alive = True
+        self.creature_alive = True
 
     def _add_self_to_park(self, new_id):
         pass
@@ -52,7 +52,7 @@ class ParkEntity(pygame.sprite.DirtySprite):
                 rect.bottom)
 
     def is_alive(self):
-        return self.alive;
+        return self.creature_alive
 
     def die(self):
         """
@@ -60,7 +60,7 @@ class ParkEntity(pygame.sprite.DirtySprite):
         """
         self.dirty = 0
         self.state.remove_entity_from_park(self, self.sprite_id)
-        self.alive = False
+        self.creature_alive = False
         self.kill()
 
     def update(self, *args):
@@ -69,6 +69,14 @@ class ParkEntity(pygame.sprite.DirtySprite):
         default behavior is to do nothing, should be overwritten
         """
         pass
+
+    def current_location_is_valid(self):
+        return self.rect.left >= 0 \
+                and self.rect.right < self.state.park_width \
+                and self.rect.top >= 0 \
+                and self.rect.bottom < self.state.park_height \
+                and self.state.topography[self.rect.centerx, self.rect.centery] \
+                >= self.state.SEA_LEVEL
 
     def _load_image_and_rect(self, starting_position: typing.Tuple[int, int]):
         image, rect = pu.load_image(self.IMAGE_LOCATION, self.scaler)

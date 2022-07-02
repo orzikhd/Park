@@ -7,6 +7,9 @@ from park.park_state import State
 
 
 class Bug(Creature):
+    """
+    Bugs are basic creatures that walk randomly.
+    """
     IMAGE_LOCATION = 'park\\pictures\\bug.png'
 
     def __init__(self,
@@ -33,5 +36,7 @@ class Bug(Creature):
         return offset, angle
 
     def update(self):
+        if not self.current_location_is_valid():
+            self.die()
         self.dirty = 1
         self.movesBehavior.move(self._random_walk)

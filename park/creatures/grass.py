@@ -11,6 +11,9 @@ from park.park_util import CREATURE_IMAGE_SIZE
 
 
 class Grass(ParkEntity):
+    """
+    Grass is a background entity that spreads across the map.
+    """
     IMAGE_LOCATION = 'park\\pictures\\grass-{}.png'
 
     def __init__(self,
@@ -56,6 +59,12 @@ class Grass(ParkEntity):
         ParkEntity.die(self)
 
     def update(self):
+        """
+        Grass spreads randomly to empty space around it.
+        """
+        if not self.current_location_is_valid():
+            self.die()
+
         if not self.spread_options:
             self.remove(self.active_grass_group)  # remove self from active group
             return

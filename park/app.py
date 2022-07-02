@@ -132,6 +132,15 @@ def run_test_park():
     state = pu.time_and_log(lambda: State(grid_depth=6, pixel_size=10), "Time to generate state:")
     state.init_screen()
 
+    creatures, rocks, active_grasses = generate_test_entities(state)
+
+    going = True
+    # ticking_times = []
+    while going:
+        park_tick(state, creatures, rocks, active_grasses, tick_speed=30)
+
+
+def generate_test_entities(state):
     active_grasses = pygame.sprite.RenderUpdates()
     grasses = pygame.sprite.RenderUpdates()
     creatures = pygame.sprite.RenderUpdates()
@@ -149,13 +158,11 @@ def run_test_park():
     #     SwirlyBug(state, starting_position=(100, 200), scaler=1, fertility=1, speed=5)
     # swirly_one.add(creatures)
 
-    grazer_one = Grazer(state, starting_position=(170, 280), scaler=1, fertility=1, speed=10, viewing_distance=120)
-    grazer_one.add(creatures)
+    creatures.add([
+        Grazer(state, starting_position=(170, 280), scaler=1, fertility=1, speed=10, viewing_distance=120)
+    ])
 
-    going = True
-    # ticking_times = []
-    while going:
-        park_tick(state, creatures, rocks, active_grasses, tick_speed=30)
+    return creatures, rocks, active_grasses
 
 
 def park_tick(state, creatures, rocks, active_grasses, tick_speed=10, display=True):

@@ -28,23 +28,33 @@ class Sees:
     A creature that sees has a sense of what entities are within its vision in the park.
     """
 
-    def __init__(self, creature, viewing_distance):
+    def __init__(self, creature, viewing_distance, see_background=True):
         from park.creatures.creature import Creature
         self.creature: Creature = creature
         self.viewing_distance = viewing_distance
+        self.see_background = see_background
         # TODO the view polygon should probably just be passed in somehow
 
     def _get_box_collisions(self, bounding_box):
-        return set(self.creature.state.background_tree.get_all_collisions(self.creature,
-                                                                          bounding_box,
-                                                                          ignore_self=True)) \
-            .union(set(self.creature.state.creature_tree.get_all_collisions(self.creature,
-                                                                            bounding_box,
-                                                                            ignore_self=True)))
+        res = set(self.creature.state.creature_tree.get_all_collisions(
+            self.creature,
+            bounding_box,
+            ignore_self=True))
+        if self.see_background:
+            return res.union(set(self.creature.state.background_tree.get_all_collisions(
+                self.creature,
+                bounding_box,
+                ignore_self=True)))
+        return res
 
-    def update_seen_sprite(self, seen_sprite: SeenEntity):
-        seen_sprite.offset = get_rect_offset(self.creature.rect, seen_sprite.entity.rect)
-        seen_sprite.l1_distance = _offset_to_distance(seen_sprite.offset)
+    def update_seen_entity(self, seen_entity: SeenEntity):
+        """
+        Update the seen entity to have the latest distance info.
+
+        TODO shouldn't be able to do this if the entity is outside viewing distance
+        """
+        seen_entity.offset = get_rect_offset(self.creature.rect, seen_entity.entity.rect)
+        seen_entity.l1_distance = _offset_to_distance(seen_entity.offset)
 
     def see(self, searching_behavior) -> SeenEntity:
         """

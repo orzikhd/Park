@@ -1,4 +1,3 @@
-import sys
 import time
 from itertools import chain
 import pygame
@@ -9,6 +8,7 @@ from park.constructs.rock import create_rock
 from park.creatures.bug import Bug
 from park.creatures.grass import Grass
 from park.creatures.grazer import Grazer
+from park.creatures.muncher import Muncher
 from park.creatures.swirly_bug import SwirlyBug
 from park.layered_dirty_cutoff import LayeredDirtyCutoff
 from park.park_state import State
@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 
 GRASS_CUTOFF = 300
 PIXEL_SIZE = 10
-FPS = 60
+FPS = 30
 
 
 def run_park():
@@ -56,6 +56,10 @@ def run_park():
     [creatures.add(swirly) for swirly in [
         SwirlyBug(state, starting_position=(800, 800), scaler=3, fertility=1, speed=5),
         SwirlyBug(state, starting_position=(700, 150), scaler=2, fertility=1, speed=15)
+    ]]
+
+    [creatures.add(muncher) for muncher in [
+        Muncher(state, starting_position=(240, 320), scaler=2, fertility=1, speed=10, viewing_distance=500)
     ]]
 
     for i in range(8):
@@ -132,7 +136,7 @@ def run_park():
 
 def run_test_park():
     # create game state
-    test_fps = 30
+    test_fps = 1
     state = pu.time_and_log(lambda: State(grid_depth=6,
                                           pixel_size=10,
                                           tick_speed=test_fps,
@@ -153,9 +157,9 @@ def generate_test_entities(state):
     creatures = pygame.sprite.RenderUpdates()
 
     # create grass
-    first_grass = Grass(state, starting_position=(120, 200), scaler=.5, fertility=1, active_grass_group=active_grasses)
-    first_grass.add(active_grasses)
-    first_grass.add(grasses)
+    # first_grass = Grass(state, starting_position=(120, 200), scaler=.5, fertility=1, active_grass_group=active_grasses)
+    # first_grass.add(active_grasses)
+    # first_grass.add(grasses)
 
     # create rocks
     rocks = [
@@ -166,7 +170,8 @@ def generate_test_entities(state):
     # swirly_one.add(creatures)
 
     creatures.add([
-        Grazer(state, starting_position=(170, 280), scaler=1, fertility=1, speed=10, viewing_distance=120)
+        Grazer(state, starting_position=(170, 280), scaler=1, fertility=1, speed=5, viewing_distance=120),
+        Muncher(state, starting_position=(240, 320), scaler=2, fertility=1, speed=5, viewing_distance=500)
     ])
 
     return creatures, rocks, active_grasses
@@ -253,7 +258,7 @@ if __name__ == "__main__":
     import os
 
     # position pygame window on screen
-    position = 300, 50
+    position = 10, 30
     os.environ['SDL_VIDEO_WINDOW_POS'] = str(position[0]) + "," + str(position[1])
     pygame.init()
 

@@ -1,5 +1,5 @@
 from park.creatures.park_entity import ParkEntity
-from park.rect_util import get_rect_offset, offset_to_l1_distance
+from park.rect_util import rect_distance
 
 
 class Chomps:
@@ -38,8 +38,7 @@ class Chomps:
             return False
 
         target_rect = chomp_target.rect
-        if offset_to_l1_distance(
-                get_rect_offset(self.creature.rect, target_rect)) > self.chomp_reach:
+        if rect_distance(self.creature.rect, target_rect) > self.chomp_reach:
             # too far away to chomp!
             return False
 

@@ -1,4 +1,6 @@
+import math
 import typing
+import random
 
 from park.behaviors.moves import Moves
 from park.creatures.park_entity import ParkEntity
@@ -31,8 +33,33 @@ class Creature(ParkEntity):
 
         self.original_image = self.image
 
+        self.rand_x_offset = 0
+        self.rand_y_offset = 0
+
     def _add_self_to_park(self, new_id):
         self.state.creature_tree.tree.insert(new_id, self.get_bounding_box())
+
+    def _random_walk(self):
+        if random.random() < 0.25:
+            self.rand_x_offset = random.choice([self.speed, 0, -self.speed])
+            self.rand_y_offset = random.choice([self.speed, 0, -self.speed])
+
+        offset = math.hypot(self.rand_x_offset, self.rand_y_offset)
+        if offset:
+            # negative y_offset to account for reversed y axis
+            angle = math.atan2(-self.rand_y_offset, self.rand_x_offset)
+        else:
+            angle = 0
+
+        return offset, angle
+
+    def _directed_walk(self, offset):
+        x_offset: float = math.copysign(min(abs(offset[0]), self.speed), offset[0])
+        y_offset: float = math.copysign(min(abs(offset[1]), self.speed), offset[1])
+
+        angle = math.atan2(-y_offset, x_offset)  # negative y_offset to account for reversed y axis
+
+        return lambda: (math.hypot(x_offset, y_offset), angle)
 
     # default behavior is to do nothing, should be overwritten
     def update(self):

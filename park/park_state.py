@@ -87,10 +87,11 @@ class State:
         :param entity: entity to remove
         :param sprite_id: sprite ID for this entity as returned by the add function
         """
-        del self.global_entities[sprite_id]
+        if sprite_id in self.global_entities:
+            del self.global_entities[sprite_id]
 
-        self.creature_tree.tree.delete(sprite_id, entity.get_bounding_box())
-        self.background_tree.tree.delete(sprite_id, entity.get_bounding_box())
+            self.creature_tree.tree.delete(sprite_id, entity.get_bounding_box())
+            self.background_tree.tree.delete(sprite_id, entity.get_bounding_box())
 
     def update_entity_in_park(self, entity, sprite_id, old_box):
         """
